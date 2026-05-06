@@ -13,7 +13,24 @@
     "outDir": "dist",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/*"],
+      "@electron/*": ["electron/*"],
+      "@shared/*": ["shared/*"],
+      "@saccades/*": ["saccades/*"],
+      "@pupil/*": ["pupil/*"],
+      "@viz/*": ["viz/*"]
+    }
   },
-  "include": ["src/**/*", "forge.env.d.ts"]
+  "include": [
+    "src/**/*",
+    "electron/**/*",
+    "shared/**/*",
+    "saccades/**/*",
+    "pupil/**/*",
+    "viz/**/*",
+    "forge.env.d.ts"
+  ]
 }

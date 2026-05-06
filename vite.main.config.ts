@@ -1,4 +1,12 @@
 import { defineConfig } from 'vite';
 
-// https://vitejs.dev/config
-export default defineConfig({});
+import { aliases } from './vite.aliases';
+
+export default defineConfig({
+  resolve: { alias: aliases },
+  build: {
+    rollupOptions: {
+      output: { entryFileNames: 'main.js' },
+    },
+  },
+});
