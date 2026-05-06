@@ -1,4 +1,4 @@
-import { useAppStore } from '../store/useAppStore';
+import { useAppStore } from '@app/store/useAppStore';
 
 export function Home() {
   const { count, increment } = useAppStore();
