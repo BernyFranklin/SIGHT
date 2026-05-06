@@ -18,16 +18,40 @@
   ],
   "parser": "@typescript-eslint/parser",
   "settings": {
-    "react": {
-      "version": "detect"
-    }
+    "react": { "version": "detect" },
+    "import/internal-regex": "^@(app|electron|shared|saccades|pupil|viz)/"
+  },
+  "rules": {
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "import/order": [
+      "warn",
+      {
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc", "caseInsensitive": true },
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"]
+      }
+    ],
+    "import/no-default-export": "error",
+    "import/no-unresolved": "off",
+    "import/namespace": "off",
+    "react-hooks/exhaustive-deps": "error",
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
   },
   "overrides": [
     {
-      "files": ["vite.*.config.ts", "vite.*.config.mts"],
+      "files": ["src/routes/**/index.tsx", "*.config.*", "vite.*.config.ts", "vite.*.config.mts"],
       "rules": {
-        "import/no-unresolved": "off"
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
       }
     }
-  ]
+  ],
+  "ignorePatterns": [".vite/", "out/", "dist/", "node_modules/"]
 }
