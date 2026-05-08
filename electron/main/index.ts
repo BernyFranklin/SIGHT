@@ -1,7 +1,9 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 
 import started from 'electron-squirrel-startup';
+
+import { IpcChannels } from '../ipc';
 
 if (started) {
   app.quit();
@@ -9,11 +11,21 @@ if (started) {
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 800,
+    frame: false,
+    titleBarStyle: 'hidden',
+    backgroundColor: '#0b1220',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
+  });
+
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send(IpcChannels.windowMaximizedChanged, true);
+  });
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send(IpcChannels.windowMaximizedChanged, false);
   });
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -26,6 +38,19 @@ const createWindow = () => {
 
   mainWindow.webContents.openDevTools();
 };
+
+ipcMain.handle(IpcChannels.windowMinimize, (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.minimize();
+});
+ipcMain.handle(IpcChannels.windowToggleMaximize, (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win) return;
+  if (win.isMaximized()) win.unmaximize();
+  else win.maximize();
+});
+ipcMain.handle(IpcChannels.windowClose, (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.close();
+});
 
 app.on('ready', createWindow);
 
