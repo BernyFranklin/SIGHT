@@ -10,6 +10,7 @@ beforeEach(() => {
       minimize: () => Promise.resolve(),
       toggleMaximize: () => Promise.resolve(),
       close: () => Promise.resolve(),
+      toggleDevTools: () => Promise.resolve(),
       onMaximizedChanged: () => () => undefined,
     },
   };

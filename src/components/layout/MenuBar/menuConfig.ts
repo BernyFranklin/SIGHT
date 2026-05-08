@@ -39,6 +39,8 @@ export const menuSections: MenuSection[] = [
       { kind: 'item', label: 'Reset Zoom', onSelect: log('View > Reset Zoom') },
       { kind: 'separator' },
       { kind: 'item', label: 'Toggle Full Screen', onSelect: log('View > Toggle Full Screen') },
+      { kind: 'separator' },
+      { kind: 'item', label: 'Toggle DevTools', onSelect: () => window.api?.windowControls.toggleDevTools() },
     ],
   },
   {

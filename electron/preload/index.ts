@@ -6,6 +6,7 @@ const windowControls = {
   minimize: () => ipcRenderer.invoke(IpcChannels.windowMinimize),
   toggleMaximize: () => ipcRenderer.invoke(IpcChannels.windowToggleMaximize),
   close: () => ipcRenderer.invoke(IpcChannels.windowClose),
+  toggleDevTools: () => ipcRenderer.invoke(IpcChannels.windowToggleDevTools),
   onMaximizedChanged: (cb: (isMaximized: boolean) => void) => {
     const listener = (_: unknown, isMaximized: boolean) => cb(isMaximized);
     ipcRenderer.on(IpcChannels.windowMaximizedChanged, listener);

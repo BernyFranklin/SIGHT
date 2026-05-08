@@ -36,7 +36,6 @@ const createWindow = () => {
     );
   }
 
-  mainWindow.webContents.openDevTools();
 };
 
 ipcMain.handle(IpcChannels.windowMinimize, (event) => {
@@ -50,6 +49,9 @@ ipcMain.handle(IpcChannels.windowToggleMaximize, (event) => {
 });
 ipcMain.handle(IpcChannels.windowClose, (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();
+});
+ipcMain.handle(IpcChannels.windowToggleDevTools, (event) => {
+  event.sender.isDevToolsOpened() ? event.sender.closeDevTools() : event.sender.openDevTools();
 });
 
 app.on('ready', createWindow);
