@@ -1,15 +1,18 @@
 import { create } from 'zustand';
 
+import { markersApi } from '@app/api/markers';
 import { type Project, projectApi } from '@app/api/project';
 
 interface ProjectState {
   open: Project[];
   activePath: string | null;
   recents: Project[];
+  hasMarkers: Record<string, boolean>;
   loadRecents: () => Promise<void>;
   createProject: () => Promise<void>;
   openProject: () => Promise<void>;
   openRecent: (path: string) => Promise<void>;
+  refreshMarkers: (path: string) => Promise<void>;
   setActive: (path: string) => void;
   closeActive: () => void;
 }
@@ -23,6 +26,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   open: [],
   activePath: null,
   recents: [],
+  hasMarkers: {},
 
   loadRecents: async () => {
     const recents = await projectApi.listRecent();
@@ -33,14 +37,26 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const project = await projectApi.create();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    set((s) => ({ open: addOpen(s.open, project), activePath: project.path, recents }));
+    const has = await markersApi.has(project.path);
+    set((s) => ({
+      open: addOpen(s.open, project),
+      activePath: project.path,
+      recents,
+      hasMarkers: { ...s.hasMarkers, [project.path]: has },
+    }));
   },
 
   openProject: async () => {
     const project = await projectApi.open();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    set((s) => ({ open: addOpen(s.open, project), activePath: project.path, recents }));
+    const has = await markersApi.has(project.path);
+    set((s) => ({
+      open: addOpen(s.open, project),
+      activePath: project.path,
+      recents,
+      hasMarkers: { ...s.hasMarkers, [project.path]: has },
+    }));
   },
 
   openRecent: async (path) => {
@@ -50,7 +66,18 @@ export const useProjectStore = create<ProjectState>((set) => ({
       set({ recents });
       return;
     }
-    set((s) => ({ open: addOpen(s.open, project), activePath: project.path, recents }));
+    const has = await markersApi.has(project.path);
+    set((s) => ({
+      open: addOpen(s.open, project),
+      activePath: project.path,
+      recents,
+      hasMarkers: { ...s.hasMarkers, [project.path]: has },
+    }));
+  },
+
+  refreshMarkers: async (path) => {
+    const has = await markersApi.has(path);
+    set((s) => ({ hasMarkers: { ...s.hasMarkers, [path]: has } }));
   },
 
   setActive: (path) => set({ activePath: path }),
