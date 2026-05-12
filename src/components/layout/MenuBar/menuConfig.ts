@@ -73,7 +73,9 @@ export function useMenuSections(): MenuSection[] {
   const createProject = useProjectStore((s) => s.createProject);
   const openProject = useProjectStore((s) => s.openProject);
   const openRecent = useProjectStore((s) => s.openRecent);
+  const closeActive = useProjectStore((s) => s.closeActive);
   const recents = useProjectStore((s) => s.recents);
+  const hasOpenProjects = useProjectStore((s) => s.open.length > 0);
 
   const recentItems: MenuItem[] = recents.length === 0
     ? [{ kind: 'item', label: 'Recent', disabled: true }]
@@ -95,6 +97,7 @@ export function useMenuSections(): MenuSection[] {
       { kind: 'item', label: 'Open Project', onSelect: () => void openProject() },
       ...recentItems,
       { kind: 'separator' },
+      { kind: 'item', label: 'Close Project', onSelect: () => closeActive(), disabled: !hasOpenProjects },
       { kind: 'item', label: 'Exit', onSelect: () => window.api?.windowControls.close() },
     ],
   };

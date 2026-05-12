@@ -4,11 +4,14 @@ import { type Project, projectApi } from '@app/api/project';
 
 interface ProjectState {
   open: Project[];
+  activePath: string | null;
   recents: Project[];
   loadRecents: () => Promise<void>;
   createProject: () => Promise<void>;
   openProject: () => Promise<void>;
   openRecent: (path: string) => Promise<void>;
+  setActive: (path: string) => void;
+  closeActive: () => void;
 }
 
 const addOpen = (open: Project[], project: Project): Project[] => {
@@ -18,6 +21,7 @@ const addOpen = (open: Project[], project: Project): Project[] => {
 
 export const useProjectStore = create<ProjectState>((set) => ({
   open: [],
+  activePath: null,
   recents: [],
 
   loadRecents: async () => {
@@ -29,14 +33,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const project = await projectApi.create();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    set((s) => ({ open: addOpen(s.open, project), recents }));
+    set((s) => ({ open: addOpen(s.open, project), activePath: project.path, recents }));
   },
 
   openProject: async () => {
     const project = await projectApi.open();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    set((s) => ({ open: addOpen(s.open, project), recents }));
+    set((s) => ({ open: addOpen(s.open, project), activePath: project.path, recents }));
   },
 
   openRecent: async (path) => {
@@ -46,6 +50,15 @@ export const useProjectStore = create<ProjectState>((set) => ({
       set({ recents });
       return;
     }
-    set((s) => ({ open: addOpen(s.open, project), recents }));
+    set((s) => ({ open: addOpen(s.open, project), activePath: project.path, recents }));
   },
+
+  setActive: (path) => set({ activePath: path }),
+
+  closeActive: () => set((s) => {
+    if (!s.activePath) return s;
+    const open = s.open.filter((p) => p.path !== s.activePath);
+    const activePath = open.length ? open[open.length - 1].path : null;
+    return { open, activePath };
+  }),
 }));
