@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { Info, MinusCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 type Event = { id: number; name: string; startTime: string; endTime: string };
@@ -85,6 +85,16 @@ export function MarkerConfigTab() {
     markTouched();
   };
 
+  const removeEvent = (id: number) => {
+    const target = events.find((e) => e.id === id);
+    if (!target) return;
+    const label = `Event ${events.findIndex((e) => e.id === id) + 1}`;
+    const ok = window.confirm(`Remove ${label}? This cannot be undone.`);
+    if (!ok) return;
+    setEvents((prev) => prev.filter((e) => e.id !== id).map((e, i) => ({ ...e, id: i + 1 })));
+    markTouched();
+  };
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <StatusBar status={status} canSave={canSave} onSave={handleSave} onCancel={handleCancel} />
@@ -100,11 +110,12 @@ export function MarkerConfigTab() {
             />
           </Field>
 
-          {events.map((event) => (
+          {events.map((event, idx) => (
             <EventField
               key={event.id}
               event={event}
               onChange={(patch) => updateEvent(event.id, patch)}
+              onRemove={idx > 0 ? () => removeEvent(event.id) : undefined}
             />
           ))}
 
@@ -213,12 +224,33 @@ function TimestampInput({
   );
 }
 
-function EventField({ event, onChange }: { event: Event; onChange: (patch: Partial<Event>) => void }) {
+function EventField({
+  event,
+  onChange,
+  onRemove,
+}: {
+  event: Event;
+  onChange: (patch: Partial<Event>) => void;
+  onRemove?: () => void;
+}) {
   return (
-    <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-surface p-3">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
-        {`Event ${event.id}`}
-      </legend>
+    <div className="flex flex-col gap-2 rounded-sm border border-border bg-surface p-3">
+      <div className="flex items-center justify-between">
+        <span className="px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
+          {`Event ${event.id}`}
+        </span>
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label={`Remove Event ${event.id}`}
+            title={`Remove Event ${event.id}`}
+            className="rounded-sm p-0.5 text-text-muted transition-colors hover:text-red-500"
+          >
+            <MinusCircle size={16} />
+          </button>
+        )}
+      </div>
       <label className="flex flex-col gap-1">
         <span className="text-xs text-text-muted">Name</span>
         <input
@@ -247,6 +279,6 @@ function EventField({ event, onChange }: { event: Event; onChange: (patch: Parti
           onChange={(v) => onChange({ endTime: v })}
         />
       </fieldset>
-    </fieldset>
+    </div>
   );
 }
