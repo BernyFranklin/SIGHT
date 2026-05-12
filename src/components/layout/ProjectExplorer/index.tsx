@@ -9,16 +9,11 @@ export function ProjectExplorer() {
       className="flex h-full shrink-0 flex-col overflow-auto border-r border-border bg-surface"
       style={{ width: '20%' }}
     >
-      {current ? <Loaded name={current.name} /> : <Empty />}
+      <div className="px-3 py-2 text-xs uppercase tracking-wide text-text-muted">
+        Project Explorer
+      </div>
+      {current && <Loaded name={current.name} />}
     </aside>
-  );
-}
-
-function Empty() {
-  return (
-    <div className="px-3 py-2 text-xs uppercase tracking-wide text-text-muted">
-      No project open
-    </div>
   );
 }
 
@@ -26,7 +21,7 @@ function Loaded({ name }: { name: string }) {
   return (
     <div className="flex flex-col">
       <div
-        className="truncate px-3 py-2 text-sm font-semibold text-text"
+        className="truncate px-3 py-1 text-sm font-semibold text-text"
         title={name}
       >
         {name}

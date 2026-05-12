@@ -28,14 +28,11 @@ export function StartSection() {
         <SectionHeader>Recent</SectionHeader>
         <ul className="flex flex-col">
           {recents.length === 0
-            ? [0, 1, 2].map((i) => (
-                <li
-                  key={i}
-                  className="px-2 py-1 text-sm italic text-text-muted opacity-60"
-                >
+            ? (
+                <li className="px-2 py-1 text-sm italic text-text-muted opacity-60">
                   No recent projects
                 </li>
-              ))
+              )
             : recents.slice(0, 3).map((p) => (
                 <li key={p.path}>
                   <button
