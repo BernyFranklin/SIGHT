@@ -10,6 +10,9 @@ export const IpcChannels = {
   projectOpen: 'project:open',
   projectOpenRecent: 'project:open-recent',
   projectListRecent: 'project:list-recent',
+  markersRead: 'markers:read',
+  markersWrite: 'markers:write',
+  markersHas: 'markers:has',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

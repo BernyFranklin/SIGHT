@@ -7,6 +7,18 @@ export interface Project {
   path: string;
 }
 
+export interface Marker {
+  id: number;
+  name: string;
+  startFrame: number;
+  endFrame: number;
+}
+
+export interface MarkersFile {
+  name: string;
+  markers: Marker[];
+}
+
 const windowControls = {
   minimize: () => ipcRenderer.invoke(IpcChannels.windowMinimize),
   toggleMaximize: () => ipcRenderer.invoke(IpcChannels.windowToggleMaximize),
@@ -32,7 +44,17 @@ const project = {
     ipcRenderer.invoke(IpcChannels.projectListRecent),
 };
 
-contextBridge.exposeInMainWorld('api', { windowControls, project });
+const markers = {
+  read: (projectPath: string): Promise<MarkersFile | null> =>
+    ipcRenderer.invoke(IpcChannels.markersRead, projectPath),
+  write: (projectPath: string, data: MarkersFile): Promise<void> =>
+    ipcRenderer.invoke(IpcChannels.markersWrite, projectPath, data),
+  has: (projectPath: string): Promise<boolean> =>
+    ipcRenderer.invoke(IpcChannels.markersHas, projectPath),
+};
+
+contextBridge.exposeInMainWorld('api', { windowControls, project, markers });
 
 export type WindowControlsApi = typeof windowControls;
 export type ProjectApi = typeof project;
+export type MarkersApi = typeof markers;
