@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { type Project, projectApi } from '@app/api/project';
 
 interface ProjectState {
-  current: Project | null;
+  open: Project[];
   recents: Project[];
   loadRecents: () => Promise<void>;
   createProject: () => Promise<void>;
@@ -11,8 +11,13 @@ interface ProjectState {
   openRecent: (path: string) => Promise<void>;
 }
 
+const addOpen = (open: Project[], project: Project): Project[] => {
+  if (open.some((p) => p.path === project.path)) return open;
+  return [...open, project];
+};
+
 export const useProjectStore = create<ProjectState>((set) => ({
-  current: null,
+  open: [],
   recents: [],
 
   loadRecents: async () => {
@@ -24,14 +29,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const project = await projectApi.create();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    set({ current: project, recents });
+    set((s) => ({ open: addOpen(s.open, project), recents }));
   },
 
   openProject: async () => {
     const project = await projectApi.open();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    set({ current: project, recents });
+    set((s) => ({ open: addOpen(s.open, project), recents }));
   },
 
   openRecent: async (path) => {
@@ -41,6 +46,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
       set({ recents });
       return;
     }
-    set({ current: project, recents });
+    set((s) => ({ open: addOpen(s.open, project), recents }));
   },
 }));
