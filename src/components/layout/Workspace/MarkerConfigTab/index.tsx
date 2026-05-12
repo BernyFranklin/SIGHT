@@ -34,6 +34,51 @@ const eventsEqual = (a: Event[], b: Event[]) =>
     && e.startTime === b[i].startTime
     && e.endTime === b[i].endTime);
 
+function tsToFrames(ts: string): number | null {
+  const parts = ts.split(':');
+  if (parts.length !== 4 || parts.some((p) => p.length !== 2)) return null;
+  const nums = parts.map((p) => parseInt(p, 10));
+  if (nums.some((n) => Number.isNaN(n))) return null;
+  const [h, m, s, f] = nums;
+  return ((h * 60 + m) * 60 + s) * FPS + f;
+}
+
+type EventError = { startTime?: string; endTime?: string; overlap?: string };
+
+function validateEvents(events: Event[]): Record<number, EventError> {
+  const errors: Record<number, EventError> = {};
+  const ranges: { id: number; start: number; end: number }[] = [];
+
+  for (const e of events) {
+    const err: EventError = {};
+    const start = tsToFrames(e.startTime);
+    const end = tsToFrames(e.endTime);
+    if (e.startTime !== '' && start === null) err.startTime = 'Incomplete timestamp.';
+    if (e.endTime !== '' && end === null) err.endTime = 'Incomplete timestamp.';
+    if (start !== null && end !== null) {
+      if (end <= start) err.endTime = 'End time must be after start time.';
+      else ranges.push({ id: e.id, start, end });
+    }
+    if (Object.keys(err).length) errors[e.id] = err;
+  }
+
+  ranges.sort((a, b) => a.start - b.start);
+  for (let i = 1; i < ranges.length; i += 1) {
+    if (ranges[i].start < ranges[i - 1].end) {
+      const id = ranges[i].id;
+      errors[id] = { ...(errors[id] ?? {}), overlap: 'Overlaps another event.' };
+    }
+  }
+
+  return errors;
+}
+
+function sortAndRenumber(events: Event[]): Event[] {
+  const withFrames = events.map((e) => ({ event: e, start: tsToFrames(e.startTime) ?? 0 }));
+  withFrames.sort((a, b) => a.start - b.start);
+  return withFrames.map(({ event }, i) => ({ ...event, id: i + 1 }));
+}
+
 export function MarkerConfigTab() {
   const [markerSetName, setMarkerSetName] = useState('');
   const [events, setEvents] = useState<Event[]>([blankEvent(1)]);
@@ -46,13 +91,21 @@ export function MarkerConfigTab() {
     return 'dirty';
   }, [saved, touched, markerSetName, events]);
 
-  const canSave = status === 'dirty';
+  const errors = useMemo(() => validateEvents(events), [events]);
+  const hasErrors = Object.keys(errors).length > 0;
+  const allEventsComplete = events.every(
+    (e) => tsToFrames(e.startTime) !== null && tsToFrames(e.endTime) !== null,
+  );
+
+  const canSave = status === 'dirty' && !hasErrors && allEventsComplete;
 
   const handleSave = () => {
     if (!canSave) return;
+    const sorted = sortAndRenumber(events);
+    setEvents(sorted);
     setSaved({
       markerSetName,
-      events: events.map((e) => ({ ...e })),
+      events: sorted.map((e) => ({ ...e })),
     });
     setTouched(false);
   };
@@ -114,6 +167,7 @@ export function MarkerConfigTab() {
             <EventField
               key={event.id}
               event={event}
+              error={errors[event.id]}
               onChange={(patch) => updateEvent(event.id, patch)}
               onRemove={idx > 0 ? () => removeEvent(event.id) : undefined}
             />
@@ -204,11 +258,14 @@ function TimestampInput({
   label,
   value,
   onChange,
+  error,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 }) {
+  const borderClass = error ? 'border-red-500' : 'border-border';
   return (
     <label className="flex flex-col gap-1">
       <span className="text-xs text-text-muted">{label}</span>
@@ -218,18 +275,21 @@ function TimestampInput({
         placeholder="HH:MM:SS:FF"
         value={value}
         onChange={(e) => onChange(formatTimestamp(e.target.value))}
-        className="w-full rounded-sm border border-border bg-bg px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary"
+        className={`w-full rounded-sm border bg-bg px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary ${borderClass}`}
       />
+      {error && <span className="text-xs text-red-500">{error}</span>}
     </label>
   );
 }
 
 function EventField({
   event,
+  error,
   onChange,
   onRemove,
 }: {
   event: Event;
+  error?: EventError;
   onChange: (patch: Partial<Event>) => void;
   onRemove?: () => void;
 }) {
@@ -272,12 +332,17 @@ function EventField({
           label="Start Time"
           value={event.startTime}
           onChange={(v) => onChange({ startTime: v })}
+          error={error?.startTime}
         />
         <TimestampInput
           label="End Time"
           value={event.endTime}
           onChange={(v) => onChange({ endTime: v })}
+          error={error?.endTime}
         />
+        {error?.overlap && (
+          <span className="px-1 text-xs text-red-500">{error.overlap}</span>
+        )}
       </fieldset>
     </div>
   );
