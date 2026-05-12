@@ -128,7 +128,7 @@ function ProjectNode({
       </div>
       {expanded && (
         <div className="px-3 py-1 text-xs italic text-text-muted opacity-70">
-          No cases currently added
+          This project is empty!
         </div>
       )}
     </div>
