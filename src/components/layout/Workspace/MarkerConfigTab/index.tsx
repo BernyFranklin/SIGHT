@@ -1,10 +1,31 @@
+import { Info } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 type Event = { id: number; name: string; timestamp: string };
 
 type Status = 'new' | 'dirty' | 'clean';
 
+const NAME_MAX = 20;
+const FPS = 30;
+const TIMESTAMP_HINT = `Format HH:MM:SS:FF (FF = frame, 0–${FPS - 1} at ${FPS} fps). Digits auto-format as you type.`;
+
 const blankEvent = (id: number): Event => ({ id, name: '', timestamp: '' });
+
+function formatTimestamp(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8);
+  const pairs: string[] = [];
+  for (let i = 0; i < digits.length; i += 2) {
+    pairs.push(digits.slice(i, i + 2));
+  }
+  const caps = [99, 59, 59, FPS - 1];
+  for (let i = 0; i < pairs.length; i += 1) {
+    if (pairs[i].length === 2) {
+      const n = Math.min(parseInt(pairs[i], 10), caps[i]);
+      pairs[i] = n.toString().padStart(2, '0');
+    }
+  }
+  return pairs.join(':');
+}
 
 const eventsEqual = (a: Event[], b: Event[]) =>
   a.length === b.length
@@ -70,7 +91,8 @@ export function MarkerConfigTab() {
             <input
               type="text"
               value={markerSetName}
-              onChange={(e) => handleNameChange(e.target.value)}
+              maxLength={NAME_MAX}
+              onChange={(e) => handleNameChange(e.target.value.slice(0, NAME_MAX))}
               className="w-full rounded-sm border border-border bg-surface px-2 py-1 text-sm text-text outline-none focus:border-primary"
             />
           </Field>
@@ -175,17 +197,25 @@ function EventField({ event, onChange }: { event: Event; onChange: (patch: Parti
         <input
           type="text"
           value={event.name}
-          onChange={(e) => onChange({ name: e.target.value })}
+          maxLength={NAME_MAX}
+          onChange={(e) => onChange({ name: e.target.value.slice(0, NAME_MAX) })}
           className="w-full rounded-sm border border-border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary"
         />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-xs text-text-muted">Timestamp</span>
+        <span className="flex items-center gap-1 text-xs text-text-muted">
+          Timestamp
+          <span title={TIMESTAMP_HINT} aria-label={TIMESTAMP_HINT} className="inline-flex cursor-help">
+            <Info size={12} />
+          </span>
+        </span>
         <input
           type="text"
+          inputMode="numeric"
+          placeholder="HH:MM:SS:FF"
           value={event.timestamp}
-          onChange={(e) => onChange({ timestamp: e.target.value })}
-          className="w-full rounded-sm border border-border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary"
+          onChange={(e) => onChange({ timestamp: formatTimestamp(e.target.value) })}
+          className="w-full rounded-sm border border-border bg-bg px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary"
         />
       </label>
     </fieldset>
