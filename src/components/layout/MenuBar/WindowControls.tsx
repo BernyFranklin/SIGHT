@@ -1,8 +1,6 @@
 import { Copy, Minus, Square, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-// COLOR: window-control hover bg = --color-surface-raised; close-button hover = --color-danger.
-// Tweak the inline `data-` driven backgrounds below if you want different swatches.
 export function WindowControls() {
   const [isMaximized, setIsMaximized] = useState(false);
 
@@ -39,21 +37,12 @@ function ControlButton({
   danger,
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { danger?: boolean }) {
-  const hoverBg = danger ? 'var(--color-danger)' : 'var(--color-surface-raised)';
+  const hoverBg = danger ? 'hover:bg-danger' : 'hover:bg-surface-raised';
   return (
     <button
       type="button"
       {...rest}
-      className="grid h-full w-12 place-items-center transition-colors"
-      style={{ color: 'var(--color-text-muted)' }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.backgroundColor = hoverBg;
-        e.currentTarget.style.color = 'var(--color-text)';
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent';
-        e.currentTarget.style.color = 'var(--color-text-muted)';
-      }}
+      className={`grid h-full w-12 place-items-center text-text-muted transition-colors hover:text-text ${hoverBg}`}
     >
       {children}
     </button>

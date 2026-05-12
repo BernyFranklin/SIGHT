@@ -5,10 +5,7 @@ export function ProjectExplorer() {
   const current = useProjectStore((s) => s.current);
 
   return (
-    <aside
-      className="flex h-full shrink-0 flex-col overflow-auto border-r border-border bg-surface"
-      style={{ width: '20%' }}
-    >
+    <aside className="flex h-full w-1/5 shrink-0 flex-col overflow-auto border-r border-border bg-surface">
       <div className="px-3 py-2 text-xs uppercase tracking-wide text-text-muted">
         Project Explorer
       </div>

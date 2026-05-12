@@ -12,11 +12,7 @@ export function App() {
   }, []);
 
   return (
-    // COLOR: page bg/text live in src/styles/tokens.css (--color-bg, --color-text).
-    <div
-      className="flex h-screen flex-col"
-      style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}
-    >
+    <div className="flex h-screen flex-col bg-bg text-text">
       <MenuBar />
       <div className="flex flex-1 overflow-hidden">
         <ProjectExplorer />

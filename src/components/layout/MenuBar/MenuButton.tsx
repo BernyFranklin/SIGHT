@@ -11,7 +11,6 @@ type Props = {
   onHoverWhileAnyOpen: () => void;
 };
 
-// COLOR: section button hover/open background is `--color-surface-raised`. Change here.
 export function MenuButton({ section, isOpen, onOpen, onClose, onHoverWhileAnyOpen }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -31,6 +30,8 @@ export function MenuButton({ section, isOpen, onOpen, onClose, onHoverWhileAnyOp
     };
   }, [isOpen, onClose]);
 
+  const stateClasses = isOpen ? 'bg-surface-raised' : 'hover:bg-surface-raised';
+
   return (
     <div
       ref={wrapperRef}
@@ -43,17 +44,7 @@ export function MenuButton({ section, isOpen, onOpen, onClose, onHoverWhileAnyOp
         aria-expanded={isOpen}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={onHoverWhileAnyOpen}
-        className="h-full px-3 text-sm transition-colors"
-        style={{
-          color: 'var(--color-text)',
-          backgroundColor: isOpen ? 'var(--color-surface-raised)' : 'transparent',
-        }}
-        onMouseOver={(e) => {
-          if (!isOpen) e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)';
-        }}
-        onMouseOut={(e) => {
-          if (!isOpen) e.currentTarget.style.backgroundColor = 'transparent';
-        }}
+        className={`h-full px-3 text-sm text-text transition-colors ${stateClasses}`}
       >
         {section.label}
       </button>
