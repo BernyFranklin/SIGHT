@@ -7,6 +7,7 @@ import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
 export function ProjectExplorer() {
   const open = useProjectStore((s) => s.open);
   const activePath = useProjectStore((s) => s.activePath);
+  const hasMarkers = useProjectStore((s) => s.hasMarkers);
   const setActive = useProjectStore((s) => s.setActive);
 
   return (
@@ -20,6 +21,7 @@ export function ProjectExplorer() {
           path={p.path}
           name={p.name}
           isActive={p.path === activePath}
+          hasMarkers={!!hasMarkers[p.path]}
           onActivate={() => setActive(p.path)}
         />
       ))}
@@ -31,11 +33,13 @@ function ProjectNode({
   path,
   name,
   isActive,
+  hasMarkers,
   onActivate,
 }: {
   path: string;
   name: string;
   isActive: boolean;
+  hasMarkers: boolean;
   onActivate: () => void;
 }) {
   const openTab = useWorkspaceStore((s) => s.openTab);
@@ -62,6 +66,15 @@ function ProjectNode({
 
   const activeClasses = isActive ? 'bg-surface-raised' : 'bg-bg hover:bg-bg/80';
   const cogVisibility = configOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100';
+
+  const openMarkerConfigTab = () =>
+    openTab({
+      id: `marker-config:${path}`,
+      title: 'Marker Config',
+      kind: 'marker-config',
+      closable: true,
+      projectPath: path,
+    });
 
   return (
     <div className="flex flex-col">
@@ -106,12 +119,7 @@ function ProjectNode({
             <ConfigMenu
               onCreateMarkerConfig={() => {
                 setConfigOpen(false);
-                openTab({
-                  id: `marker-config:${path}`,
-                  title: 'Marker Config',
-                  kind: 'marker-config',
-                  closable: true,
-                });
+                openMarkerConfigTab();
               }}
               onCreateProjectConfig={() => {
                 setConfigOpen(false);
@@ -120,6 +128,7 @@ function ProjectNode({
                   title: 'Project Config',
                   kind: 'project-config',
                   closable: true,
+                  projectPath: path,
                 });
               }}
             />
@@ -127,9 +136,40 @@ function ProjectNode({
         </div>
       </div>
       {expanded && (
-        <div className="px-3 py-1 text-xs italic text-text-muted opacity-70">
-          This project is empty!
-        </div>
+        hasMarkers ? (
+          <ConfigFolder onOpenMarkers={openMarkerConfigTab} />
+        ) : (
+          <div className="px-3 py-1 text-xs italic text-text-muted opacity-70">
+            This project is empty!
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+function ConfigFolder({ onOpenMarkers }: { onOpenMarkers: () => void }) {
+  const [expanded, setExpanded] = useState(true);
+  const Chevron = expanded ? ChevronDown : ChevronRight;
+  return (
+    <div className="flex flex-col">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex items-center gap-1 px-4 py-0.5 text-left text-sm text-text hover:bg-bg/80"
+        aria-expanded={expanded}
+      >
+        <Chevron size={12} className="shrink-0 text-text-muted" />
+        <span className="truncate">Config</span>
+      </button>
+      {expanded && (
+        <button
+          type="button"
+          onClick={onOpenMarkers}
+          className="flex items-center gap-1 px-4 py-0.5 pl-9 text-left text-sm text-text hover:bg-bg/80"
+        >
+          <span className="truncate">Markers</span>
+        </button>
       )}
     </div>
   );
