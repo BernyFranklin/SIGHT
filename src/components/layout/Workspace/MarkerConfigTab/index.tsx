@@ -1,7 +1,7 @@
 import { Info } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-type Event = { id: number; name: string; timestamp: string };
+type Event = { id: number; name: string; startTime: string; endTime: string };
 
 type Status = 'new' | 'dirty' | 'clean';
 
@@ -9,7 +9,7 @@ const NAME_MAX = 20;
 const FPS = 30;
 const TIMESTAMP_HINT = `Format HH:MM:SS:FF (FF = frame, 0–${FPS - 1} at ${FPS} fps). Digits auto-format as you type.`;
 
-const blankEvent = (id: number): Event => ({ id, name: '', timestamp: '' });
+const blankEvent = (id: number): Event => ({ id, name: '', startTime: '', endTime: '' });
 
 function formatTimestamp(raw: string): string {
   const digits = raw.replace(/\D/g, '').slice(0, 8);
@@ -29,7 +29,10 @@ function formatTimestamp(raw: string): string {
 
 const eventsEqual = (a: Event[], b: Event[]) =>
   a.length === b.length
-  && a.every((e, i) => e.name === b[i].name && e.timestamp === b[i].timestamp);
+  && a.every((e, i) =>
+    e.name === b[i].name
+    && e.startTime === b[i].startTime
+    && e.endTime === b[i].endTime);
 
 export function MarkerConfigTab() {
   const [markerSetName, setMarkerSetName] = useState('');
@@ -186,6 +189,30 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function TimestampInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-xs text-text-muted">{label}</span>
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="HH:MM:SS:FF"
+        value={value}
+        onChange={(e) => onChange(formatTimestamp(e.target.value))}
+        className="w-full rounded-sm border border-border bg-surface px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary"
+      />
+    </label>
+  );
+}
+
 function EventField({ event, onChange }: { event: Event; onChange: (patch: Partial<Event>) => void }) {
   return (
     <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-surface p-3">
@@ -202,22 +229,24 @@ function EventField({ event, onChange }: { event: Event; onChange: (patch: Parti
           className="w-full rounded-sm border border-border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary"
         />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="flex items-center gap-1 text-xs text-text-muted">
+      <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-bg p-3">
+        <legend className="flex items-center gap-1 px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
           Timestamp
           <span title={TIMESTAMP_HINT} aria-label={TIMESTAMP_HINT} className="inline-flex cursor-help">
             <Info size={12} />
           </span>
-        </span>
-        <input
-          type="text"
-          inputMode="numeric"
-          placeholder="HH:MM:SS:FF"
-          value={event.timestamp}
-          onChange={(e) => onChange({ timestamp: formatTimestamp(e.target.value) })}
-          className="w-full rounded-sm border border-border bg-bg px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary"
+        </legend>
+        <TimestampInput
+          label="Start Time"
+          value={event.startTime}
+          onChange={(v) => onChange({ startTime: v })}
         />
-      </label>
+        <TimestampInput
+          label="End Time"
+          value={event.endTime}
+          onChange={(v) => onChange({ endTime: v })}
+        />
+      </fieldset>
     </fieldset>
   );
 }
