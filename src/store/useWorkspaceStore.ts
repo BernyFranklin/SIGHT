@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type TabKind = 'welcome';
+export type TabKind = 'welcome' | 'marker-config' | 'project-config';
 
 export interface Tab {
   id: string;

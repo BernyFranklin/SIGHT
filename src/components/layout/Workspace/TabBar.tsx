@@ -41,7 +41,7 @@ function TabPill({
   onClose: () => void;
 }) {
   const stateClasses = active
-    ? 'bg-surface-raised text-text'
+    ? 'bg-surface-raised text-text font-bold'
     : 'text-text-muted';
   return (
     <div
