@@ -96,7 +96,7 @@ export function MarkerConfigTab() {
               value={markerSetName}
               maxLength={NAME_MAX}
               onChange={(e) => handleNameChange(e.target.value.slice(0, NAME_MAX))}
-              className="w-full rounded-sm border border-border bg-surface px-2 py-1 text-sm text-text outline-none focus:border-primary"
+              className="w-full rounded-sm border border-border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary"
             />
           </Field>
 
@@ -207,7 +207,7 @@ function TimestampInput({
         placeholder="HH:MM:SS:FF"
         value={value}
         onChange={(e) => onChange(formatTimestamp(e.target.value))}
-        className="w-full rounded-sm border border-border bg-surface px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary"
+        className="w-full rounded-sm border border-border bg-bg px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary"
       />
     </label>
   );
@@ -229,7 +229,7 @@ function EventField({ event, onChange }: { event: Event; onChange: (patch: Parti
           className="w-full rounded-sm border border-border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary"
         />
       </label>
-      <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-bg p-3">
+      <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-surface p-3">
         <legend className="flex items-center gap-1 px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
           Timestamp
           <span title={TIMESTAMP_HINT} aria-label={TIMESTAMP_HINT} className="inline-flex cursor-help">
