@@ -8,5 +8,5 @@ export function TabContent() {
   const active = tabs.find((t) => t.id === activeId);
   if (!active) return null;
   const Component = tabRegistry[active.kind];
-  return <Component />;
+  return <Component tab={active} />;
 }

@@ -1,3 +1,5 @@
+import type { Tab } from '@app/store/useWorkspaceStore';
+
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { EventField } from './components/EventField';
 import { Field } from './components/Field';
@@ -5,7 +7,7 @@ import { StatusBar } from './components/StatusBar';
 import { NAME_MAX } from './constants';
 import { useMarkerConfig } from './useMarkerConfig';
 
-export function MarkerConfigTab() {
+export function MarkerConfigTab({ tab }: { tab: Tab }) {
   const {
     markerSetName,
     events,
@@ -21,7 +23,7 @@ export function MarkerConfigTab() {
     cancelRemove,
     handleSave,
     handleCancel,
-  } = useMarkerConfig();
+  } = useMarkerConfig(tab.projectPath ?? '');
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">

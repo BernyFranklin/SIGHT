@@ -7,6 +7,7 @@ export interface Tab {
   title: string;
   kind: TabKind;
   closable: boolean;
+  projectPath?: string;
 }
 
 interface WorkspaceState {

@@ -7,7 +7,7 @@ const blankEvent = (id: string): Event => ({ id, name: '', startTime: '', endTim
 
 export type PendingRemove = { id: string; index: number };
 
-export function useMarkerConfig() {
+export function useMarkerConfig(_projectPath: string) {
   const idCounter = useRef(0);
   const nextId = () => {
     idCounter.current += 1;
