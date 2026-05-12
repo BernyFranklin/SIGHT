@@ -1,5 +1,8 @@
+import { useProjectStore } from '@app/store/useProjectStore';
+
 export type MenuItem =
   | { kind: 'item'; label: string; onSelect?: () => void; disabled?: boolean }
+  | { kind: 'submenu'; label: string; items: MenuItem[]; disabled?: boolean }
   | { kind: 'separator' };
 
 export type MenuSection = {
@@ -11,21 +14,7 @@ export type MenuSection = {
 // eslint-disable-next-line no-console
 const log = (label: string) => () => console.info(`[menu] ${label}`);
 
-export const menuSections: MenuSection[] = [
-  {
-    id: 'file',
-    label: 'File',
-    items: [
-      { kind: 'item', label: 'New Session', onSelect: log('File > New Session') },
-      { kind: 'item', label: 'Open Recording…', onSelect: log('File > Open Recording') },
-      { kind: 'item', label: 'Import Raw Gaze Data…', onSelect: log('File > Import Raw Gaze Data') },
-      { kind: 'item', label: 'Recent', disabled: true },
-      { kind: 'separator' },
-      { kind: 'item', label: 'Export Results…', onSelect: log('File > Export Results') },
-      { kind: 'separator' },
-      { kind: 'item', label: 'Exit', onSelect: () => window.api?.windowControls.close() },
-    ],
-  },
+const staticSections: MenuSection[] = [
   {
     id: 'view',
     label: 'View',
@@ -79,3 +68,36 @@ export const menuSections: MenuSection[] = [
     ],
   },
 ];
+
+export function useMenuSections(): MenuSection[] {
+  const createProject = useProjectStore((s) => s.createProject);
+  const openProject = useProjectStore((s) => s.openProject);
+  const openRecent = useProjectStore((s) => s.openRecent);
+  const recents = useProjectStore((s) => s.recents);
+
+  const recentItems: MenuItem[] = recents.length === 0
+    ? [{ kind: 'item', label: 'Recent', disabled: true }]
+    : [{
+        kind: 'submenu',
+        label: 'Recent',
+        items: recents.slice(0, 3).map((p) => ({
+          kind: 'item' as const,
+          label: p.name,
+          onSelect: () => void openRecent(p.path),
+        })),
+      }];
+
+  const fileSection: MenuSection = {
+    id: 'file',
+    label: 'File',
+    items: [
+      { kind: 'item', label: 'New Project', onSelect: () => void createProject() },
+      { kind: 'item', label: 'Open Project', onSelect: () => void openProject() },
+      ...recentItems,
+      { kind: 'separator' },
+      { kind: 'item', label: 'Exit', onSelect: () => window.api?.windowControls.close() },
+    ],
+  };
+
+  return [fileSection, ...staticSections];
+}

@@ -1,15 +1,25 @@
+import { ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+
 import type { MenuItem } from './menuConfig';
 
 type Props = {
   items: MenuItem[];
   onSelect: () => void;
+  side?: 'bottom' | 'right';
 };
 
-export function MenuDropdown({ items, onSelect }: Props) {
+export function MenuDropdown({ items, onSelect, side = 'bottom' }: Props) {
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+
+  const positionClasses = side === 'right'
+    ? 'absolute left-full top-0 ml-px'
+    : 'absolute left-0 top-full mt-px';
+
   return (
     <div
       role="menu"
-      className="absolute left-0 top-full z-50 mt-px min-w-56 overflow-hidden rounded-md border border-border bg-surface-raised py-1 shadow-overlay"
+      className={`${positionClasses} z-50 min-w-56 overflow-visible rounded-md border border-border bg-surface-raised py-1 shadow-overlay`}
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
       {items.map((item, i) => {
@@ -22,12 +32,39 @@ export function MenuDropdown({ items, onSelect }: Props) {
             />
           );
         }
+        if (item.kind === 'submenu') {
+          const isOpen = openSubmenu === item.label;
+          return (
+            <div
+              key={item.label}
+              className="relative"
+              onMouseEnter={() => !item.disabled && setOpenSubmenu(item.label)}
+              onMouseLeave={() => setOpenSubmenu((cur) => (cur === item.label ? null : cur))}
+            >
+              <button
+                type="button"
+                role="menuitem"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                disabled={item.disabled}
+                className="flex w-full items-center justify-between px-3 py-1.5 text-left text-sm text-text transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span>{item.label}</span>
+                <ChevronRight size={14} className="text-text-muted" />
+              </button>
+              {isOpen && (
+                <MenuDropdown items={item.items} onSelect={onSelect} side="right" />
+              )}
+            </div>
+          );
+        }
         return (
           <button
             key={item.label}
             type="button"
             role="menuitem"
             disabled={item.disabled}
+            onMouseEnter={() => setOpenSubmenu(null)}
             onClick={() => {
               item.onSelect?.();
               onSelect();

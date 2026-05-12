@@ -2,12 +2,13 @@ import { useState } from 'react';
 
 import { Logo } from './Logo';
 import { MenuButton } from './MenuButton';
-import { menuSections } from './menuConfig';
+import { useMenuSections } from './menuConfig';
 import { WindowControls } from './WindowControls';
 
 // SIZE: bar height (h-8 = 32px), logo size (Logo.tsx), and icon sizes (16px) live in their files.
 export function MenuBar() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const menuSections = useMenuSections();
 
   return (
     <div
