@@ -1,36 +1,56 @@
-import { FolderOpen } from 'lucide-react';
+import { FolderOpen, FolderPlus } from 'lucide-react';
 
-// COLOR: section header = --color-text-muted; action row hover = --color-surface;
-// "no recent" rows = --color-text-muted at lower opacity.
+import { useProjectStore } from '@app/store/useProjectStore';
+
 export function StartSection() {
+  const createProject = useProjectStore((s) => s.createProject);
+  const openProject = useProjectStore((s) => s.openProject);
+  const openRecent = useProjectStore((s) => s.openRecent);
+  const recents = useProjectStore((s) => s.recents);
+
   return (
     <section className="flex flex-col gap-6">
       <div>
         <SectionHeader>Start</SectionHeader>
         <ActionRow
+          icon={<FolderPlus size={16} />}
+          label="New Project"
+          onClick={() => void createProject()}
+        />
+        <ActionRow
           icon={<FolderOpen size={16} />}
           label="Open Project"
-          onClick={() => {
-            // TODO: wire IPC -> electron main -> dialog.showOpenDialog,
-            // then dispatch openTab() or load project into state.
-            // eslint-disable-next-line no-console
-            console.info('[TODO] Open Project — wire IPC + dialog.showOpenDialog');
-          }}
+          onClick={() => void openProject()}
         />
       </div>
 
       <div>
         <SectionHeader>Recent</SectionHeader>
         <ul className="flex flex-col">
-          {[0, 1, 2].map((i) => (
-            <li
-              key={i}
-              className="px-2 py-1 text-sm italic"
-              style={{ color: 'var(--color-text-muted)', opacity: 0.6 }}
-            >
-              No recent projects
-            </li>
-          ))}
+          {recents.length === 0
+            ? [0, 1, 2].map((i) => (
+                <li
+                  key={i}
+                  className="px-2 py-1 text-sm italic text-text-muted opacity-60"
+                >
+                  No recent projects
+                </li>
+              ))
+            : recents.slice(0, 3).map((p) => (
+                <li key={p.path}>
+                  <button
+                    type="button"
+                    onClick={() => void openRecent(p.path)}
+                    className="flex w-full flex-col items-start rounded-sm px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                    title={p.path}
+                  >
+                    <span className="text-sm text-text">{p.name}</span>
+                    <span className="max-w-full truncate text-xs text-text-muted">
+                      {p.path}
+                    </span>
+                  </button>
+                </li>
+              ))}
         </ul>
       </div>
     </section>
@@ -39,10 +59,7 @@ export function StartSection() {
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h2
-      className="mb-2 text-xs font-semibold uppercase tracking-wider"
-      style={{ color: 'var(--color-text-muted)' }}
-    >
+    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
       {children}
     </h2>
   );
@@ -61,16 +78,9 @@ function ActionRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm transition-colors"
-      style={{ color: 'var(--color-primary)' }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.backgroundColor = 'var(--color-surface)';
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent';
-      }}
+      className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-primary transition-colors hover:bg-surface"
     >
-      <span style={{ color: 'var(--color-primary)' }}>{icon}</span>
+      <span>{icon}</span>
       <span>{label}</span>
     </button>
   );
