@@ -50,8 +50,9 @@ function TabPill({
       onClick={onActivate}
       className={`flex cursor-pointer items-center gap-2 border-r border-border px-3 text-sm transition-colors ${stateClasses}`}
     >
-      {/* Mini logo placeholder — mirrors Logo.tsx swatch idea. */}
-      <span className="block h-3.5 w-3.5 rounded-sm bg-primary" aria-hidden />
+      {tab.kind === 'welcome' && (
+        <span className="block h-3.5 w-3.5 rounded-sm bg-primary" aria-hidden />
+      )}
       <span>{tab.title}</span>
       {tab.closable && (
         <button
