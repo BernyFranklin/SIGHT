@@ -24,3 +24,15 @@ export function tsToFrames(ts: string): number | null {
   const [h, m, s, f] = nums;
   return ((h * 60 + m) * 60 + s) * FPS + f;
 }
+
+export function framesToTs(total: number): string {
+  const safe = Math.max(0, Math.floor(total));
+  const f = safe % FPS;
+  const totalSeconds = Math.floor(safe / FPS);
+  const s = totalSeconds % 60;
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const m = totalMinutes % 60;
+  const h = Math.floor(totalMinutes / 60);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`;
+}

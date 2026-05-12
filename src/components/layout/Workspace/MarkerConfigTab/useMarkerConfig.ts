@@ -1,5 +1,9 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { markersApi, type MarkersFile } from '@app/api/markers';
+import { useProjectStore } from '@app/store/useProjectStore';
+
+import { framesToTs, tsToFrames } from './timestamp';
 import type { Event, MarkerConfig, Status } from './types';
 import { eventsEqual, isEventComplete, sortByStart, validateEvents } from './validation';
 
@@ -7,7 +11,7 @@ const blankEvent = (id: string): Event => ({ id, name: '', startTime: '', endTim
 
 export type PendingRemove = { id: string; index: number };
 
-export function useMarkerConfig(_projectPath: string) {
+export function useMarkerConfig(projectPath: string) {
   const idCounter = useRef(0);
   const nextId = () => {
     idCounter.current += 1;
@@ -19,6 +23,30 @@ export function useMarkerConfig(_projectPath: string) {
   const [saved, setSaved] = useState<MarkerConfig | null>(null);
   const [touched, setTouched] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<PendingRemove | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!projectPath) return;
+    let cancelled = false;
+    (async () => {
+      const file = await markersApi.read(projectPath);
+      if (cancelled || !file) return;
+      const loaded: Event[] = file.markers.map((m) => ({
+        id: `e${++idCounter.current}`,
+        name: m.name,
+        startTime: framesToTs(m.startFrame),
+        endTime: framesToTs(m.endFrame),
+      }));
+      const seed: Event[] = loaded.length > 0 ? loaded : [blankEvent(`e${++idCounter.current}`)];
+      setMarkerSetNameRaw(file.name);
+      setEvents(seed);
+      setSaved({ markerSetName: file.name, events: seed.map((e) => ({ ...e })) });
+      setTouched(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectPath]);
 
   const status: Status = useMemo(() => {
     if (!saved) return touched ? 'dirty' : 'new';
@@ -30,7 +58,7 @@ export function useMarkerConfig(_projectPath: string) {
   const hasErrors = Object.keys(errors).length > 0;
   const allEventsComplete = events.every(isEventComplete);
 
-  const canSave = status === 'dirty' && !hasErrors && allEventsComplete;
+  const canSave = status === 'dirty' && !hasErrors && allEventsComplete && !saving;
 
   const markTouched = () => setTouched(true);
 
@@ -65,15 +93,30 @@ export function useMarkerConfig(_projectPath: string) {
 
   const cancelRemove = () => setPendingRemove(null);
 
-  const handleSave = () => {
-    if (!canSave) return;
+  const handleSave = async () => {
+    if (!canSave || !projectPath) return;
     const sorted = sortByStart(events);
-    setEvents(sorted);
-    setSaved({
-      markerSetName,
-      events: sorted.map((e) => ({ ...e })),
-    });
-    setTouched(false);
+    const payload: MarkersFile = {
+      name: markerSetName,
+      markers: sorted.map((e, i) => ({
+        id: i + 1,
+        name: e.name,
+        startFrame: tsToFrames(e.startTime)!,
+        endFrame: tsToFrames(e.endTime)!,
+      })),
+    };
+    setSaving(true);
+    try {
+      await markersApi.write(projectPath, payload);
+      setEvents(sorted);
+      setSaved({ markerSetName, events: sorted.map((e) => ({ ...e })) });
+      setTouched(false);
+      await useProjectStore.getState().refreshMarkers(projectPath);
+    } catch (err) {
+      console.error('[useMarkerConfig] failed to save markers', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
