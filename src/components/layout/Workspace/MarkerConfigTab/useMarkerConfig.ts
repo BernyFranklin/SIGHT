@@ -3,9 +3,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { markersApi, type MarkersFile } from '@app/api/markers';
 import { useProjectStore } from '@app/store/useProjectStore';
 
+import { DEFAULT_FPS } from './constants';
 import { framesToTs, tsToFrames } from './timestamp';
-import type { Event, MarkerConfig, Status } from './types';
-import { eventsEqual, isEventComplete, sortByStart, validateEvents } from './validation';
+import type { Event, Fps, MarkerConfig, Status } from './types';
+import { eventsEqual, hasAnyTimestamp, isEventComplete, sortByStart, validateEvents } from './validation';
 
 const blankEvent = (id: string): Event => ({ id, name: '', startTime: '', endTime: '' });
 
@@ -19,6 +20,7 @@ export function useMarkerConfig(projectPath: string) {
   };
 
   const [markerSetName, setMarkerSetNameRaw] = useState('');
+  const [fps, setFpsRaw] = useState<Fps>(DEFAULT_FPS);
   const [events, setEvents] = useState<Event[]>(() => [blankEvent(`e${++idCounter.current}`)]);
   const [saved, setSaved] = useState<MarkerConfig | null>(null);
   const [touched, setTouched] = useState(false);
@@ -31,16 +33,18 @@ export function useMarkerConfig(projectPath: string) {
     (async () => {
       const file = await markersApi.read(projectPath);
       if (cancelled || !file) return;
+      const loadedFps: Fps = file.fps === 60 ? 60 : 30;
       const loaded: Event[] = file.markers.map((m) => ({
         id: `e${++idCounter.current}`,
         name: m.name,
-        startTime: framesToTs(m.startFrame),
-        endTime: framesToTs(m.endFrame),
+        startTime: framesToTs(m.startFrame, loadedFps),
+        endTime: framesToTs(m.endFrame, loadedFps),
       }));
       const seed: Event[] = loaded.length > 0 ? loaded : [blankEvent(`e${++idCounter.current}`)];
       setMarkerSetNameRaw(file.name);
+      setFpsRaw(loadedFps);
       setEvents(seed);
-      setSaved({ markerSetName: file.name, events: seed.map((e) => ({ ...e })) });
+      setSaved({ markerSetName: file.name, fps: loadedFps, events: seed.map((e) => ({ ...e })) });
       setTouched(false);
     })();
     return () => {
@@ -50,20 +54,31 @@ export function useMarkerConfig(projectPath: string) {
 
   const status: Status = useMemo(() => {
     if (!saved) return touched ? 'dirty' : 'new';
-    if (saved.markerSetName === markerSetName && eventsEqual(saved.events, events)) return 'clean';
+    if (
+      saved.markerSetName === markerSetName
+      && saved.fps === fps
+      && eventsEqual(saved.events, events)
+    ) return 'clean';
     return 'dirty';
-  }, [saved, touched, markerSetName, events]);
+  }, [saved, touched, markerSetName, fps, events]);
 
-  const errors = useMemo(() => validateEvents(events), [events]);
+  const errors = useMemo(() => validateEvents(events, fps), [events, fps]);
   const hasErrors = Object.keys(errors).length > 0;
-  const allEventsComplete = events.every(isEventComplete);
+  const allEventsComplete = events.every((e) => isEventComplete(e, fps));
 
   const canSave = status === 'dirty' && !hasErrors && allEventsComplete && !saving;
+  const fpsLocked = hasAnyTimestamp(events);
 
   const markTouched = () => setTouched(true);
 
   const setMarkerSetName = (value: string) => {
     setMarkerSetNameRaw(value);
+    markTouched();
+  };
+
+  const setFps = (value: Fps) => {
+    if (fpsLocked) return;
+    setFpsRaw(value);
     markTouched();
   };
 
@@ -95,21 +110,22 @@ export function useMarkerConfig(projectPath: string) {
 
   const handleSave = async () => {
     if (!canSave || !projectPath) return;
-    const sorted = sortByStart(events);
+    const sorted = sortByStart(events, fps);
     const payload: MarkersFile = {
       name: markerSetName,
+      fps,
       markers: sorted.map((e, i) => ({
         id: i + 1,
         name: e.name,
-        startFrame: tsToFrames(e.startTime)!,
-        endFrame: tsToFrames(e.endTime)!,
+        startFrame: tsToFrames(e.startTime, fps)!,
+        endFrame: tsToFrames(e.endTime, fps)!,
       })),
     };
     setSaving(true);
     try {
       await markersApi.write(projectPath, payload);
       setEvents(sorted);
-      setSaved({ markerSetName, events: sorted.map((e) => ({ ...e })) });
+      setSaved({ markerSetName, fps, events: sorted.map((e) => ({ ...e })) });
       setTouched(false);
       await useProjectStore.getState().refreshMarkers(projectPath);
     } catch (err) {
@@ -122,9 +138,11 @@ export function useMarkerConfig(projectPath: string) {
   const handleCancel = () => {
     if (saved) {
       setMarkerSetNameRaw(saved.markerSetName);
+      setFpsRaw(saved.fps);
       setEvents(saved.events.map((e) => ({ ...e })));
     } else {
       setMarkerSetNameRaw('');
+      setFpsRaw(DEFAULT_FPS);
       setEvents([blankEvent(nextId())]);
     }
     setTouched(false);
@@ -132,12 +150,15 @@ export function useMarkerConfig(projectPath: string) {
 
   return {
     markerSetName,
+    fps,
+    fpsLocked,
     events,
     status,
     errors,
     canSave,
     pendingRemove,
     setMarkerSetName,
+    setFps,
     addEvent,
     updateEvent,
     requestRemove,

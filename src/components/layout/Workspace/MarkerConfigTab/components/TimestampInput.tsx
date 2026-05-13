@@ -1,13 +1,16 @@
 import { formatTimestamp } from '../timestamp';
+import type { Fps } from '../types';
 
 export function TimestampInput({
   label,
   value,
+  fps,
   onChange,
   error,
 }: {
   label: string;
   value: string;
+  fps: Fps;
   onChange: (value: string) => void;
   error?: string;
 }) {
@@ -20,7 +23,7 @@ export function TimestampInput({
         inputMode="numeric"
         placeholder="HH:MM:SS:FF"
         value={value}
-        onChange={(e) => onChange(formatTimestamp(e.target.value))}
+        onChange={(e) => onChange(formatTimestamp(e.target.value, fps))}
         className={`w-full rounded-sm border bg-bg px-2 py-1 font-mono text-sm text-text outline-none focus:border-primary ${borderClass}`}
       />
       {error && <span className="text-xs text-red-500">{error}</span>}

@@ -1,3 +1,5 @@
+export type Fps = 30 | 60;
+
 export type Event = {
   id: string;
   name: string;
@@ -15,5 +17,6 @@ export type EventError = {
 
 export type MarkerConfig = {
   markerSetName: string;
+  fps: Fps;
   events: Event[];
 };

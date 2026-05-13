@@ -1,14 +1,14 @@
 import { tsToFrames } from './timestamp';
-import type { Event, EventError } from './types';
+import type { Event, EventError, Fps } from './types';
 
-export function validateEvents(events: Event[]): Record<string, EventError> {
+export function validateEvents(events: Event[], fps: Fps): Record<string, EventError> {
   const errors: Record<string, EventError> = {};
   const ranges: { id: string; start: number; end: number }[] = [];
 
   for (const e of events) {
     const err: EventError = {};
-    const start = tsToFrames(e.startTime);
-    const end = tsToFrames(e.endTime);
+    const start = tsToFrames(e.startTime, fps);
+    const end = tsToFrames(e.endTime, fps);
     if (e.startTime !== '' && start === null) err.startTime = 'Incomplete timestamp.';
     if (e.endTime !== '' && end === null) err.endTime = 'Incomplete timestamp.';
     if (start !== null && end !== null) {
@@ -29,9 +29,9 @@ export function validateEvents(events: Event[]): Record<string, EventError> {
   return errors;
 }
 
-export function sortByStart(events: Event[]): Event[] {
+export function sortByStart(events: Event[], fps: Fps): Event[] {
   return [...events].sort(
-    (a, b) => (tsToFrames(a.startTime) ?? 0) - (tsToFrames(b.startTime) ?? 0),
+    (a, b) => (tsToFrames(a.startTime, fps) ?? 0) - (tsToFrames(b.startTime, fps) ?? 0),
   );
 }
 
@@ -45,6 +45,10 @@ export function eventsEqual(a: Event[], b: Event[]): boolean {
   );
 }
 
-export function isEventComplete(e: Event): boolean {
-  return tsToFrames(e.startTime) !== null && tsToFrames(e.endTime) !== null;
+export function isEventComplete(e: Event, fps: Fps): boolean {
+  return tsToFrames(e.startTime, fps) !== null && tsToFrames(e.endTime, fps) !== null;
+}
+
+export function hasAnyTimestamp(events: Event[]): boolean {
+  return events.some((e) => e.startTime !== '' || e.endTime !== '');
 }

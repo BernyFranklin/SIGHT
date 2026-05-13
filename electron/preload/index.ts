@@ -14,8 +14,11 @@ export interface Marker {
   endFrame: number;
 }
 
+export type Fps = 30 | 60;
+
 export interface MarkersFile {
   name: string;
+  fps: Fps;
   markers: Marker[];
 }
 

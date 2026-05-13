@@ -1,22 +1,25 @@
 import { Info, MinusCircle } from 'lucide-react';
 
-import { NAME_MAX, TIMESTAMP_HINT } from '../constants';
-import type { Event, EventError } from '../types';
+import { NAME_MAX, timestampHint } from '../constants';
+import type { Event, EventError, Fps } from '../types';
 import { TimestampInput } from './TimestampInput';
 
 export function EventField({
   index,
   event,
+  fps,
   error,
   onChange,
   onRemove,
 }: {
   index: number;
   event: Event;
+  fps: Fps;
   error?: EventError;
   onChange: (patch: Partial<Event>) => void;
   onRemove?: () => void;
 }) {
+  const hint = timestampHint(fps);
   return (
     <div className="flex flex-col gap-2 rounded-sm border border-border bg-surface p-3">
       <div className="flex items-center justify-between">
@@ -48,19 +51,21 @@ export function EventField({
       <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-surface p-3">
         <legend className="flex items-center gap-1 px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
           Timestamp
-          <span title={TIMESTAMP_HINT} aria-label={TIMESTAMP_HINT} className="inline-flex cursor-help">
+          <span title={hint} aria-label={hint} className="inline-flex cursor-help">
             <Info size={12} />
           </span>
         </legend>
         <TimestampInput
           label="Start Time"
           value={event.startTime}
+          fps={fps}
           onChange={(v) => onChange({ startTime: v })}
           error={error?.startTime}
         />
         <TimestampInput
           label="End Time"
           value={event.endTime}
+          fps={fps}
           onChange={(v) => onChange({ endTime: v })}
           error={error?.endTime}
         />

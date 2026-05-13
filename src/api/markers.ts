@@ -1,5 +1,5 @@
-import type { Marker, MarkersFile } from '@electron/preload';
+import type { Fps, Marker, MarkersFile } from '@electron/preload';
 
-export type { Marker, MarkersFile };
+export type { Fps, Marker, MarkersFile };
 
 export const markersApi = window.api.markers;
