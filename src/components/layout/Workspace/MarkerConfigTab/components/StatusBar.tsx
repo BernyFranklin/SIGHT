@@ -50,8 +50,8 @@ function statusStyles(status: Status): { bg: string; text: string } {
     case 'new':
       return { bg: 'bg-neutral-700', text: 'text-white' };
     case 'dirty':
-      return { bg: 'bg-red-700', text: 'text-white' };
+      return { bg: 'bg-red-900/60', text: 'text-white' };
     case 'clean':
-      return { bg: 'bg-green-700', text: 'text-white' };
+      return { bg: 'bg-green-900/60', text: 'text-white' };
   }
 }
