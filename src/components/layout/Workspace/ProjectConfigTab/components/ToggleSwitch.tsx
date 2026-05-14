@@ -6,20 +6,32 @@ export function ToggleSwitch({
   onChange: (next: boolean) => void;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={value}
-      onClick={() => onChange(!value)}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-        value ? 'bg-primary' : 'bg-surface-raised'
-      }`}
-    >
+    <div className="flex items-center gap-2">
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          value ? 'translate-x-4' : 'translate-x-0.5'
+        className={`text-xs uppercase tracking-wider ${value ? 'text-text-muted/60' : 'text-text'}`}
+      >
+        Off
+      </span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={value}
+        onClick={() => onChange(!value)}
+        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+          value ? 'bg-primary' : 'bg-surface'
         }`}
-      />
-    </button>
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            value ? 'translate-x-4' : 'translate-x-0.5'
+          }`}
+        />
+      </button>
+      <span
+        className={`text-xs uppercase tracking-wider ${value ? 'text-text' : 'text-text-muted/60'}`}
+      >
+        On
+      </span>
+    </div>
   );
 }
