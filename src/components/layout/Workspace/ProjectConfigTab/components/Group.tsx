@@ -1,9 +1,9 @@
 export function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="border-b border-border pb-1 text-sm font-semibold uppercase tracking-wider text-text">
+    <section className="flex flex-col gap-3 rounded-sm border border-border bg-surface p-3">
+      <span className="px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
         {title}
-      </h2>
+      </span>
       <div className="flex flex-col gap-4">{children}</div>
     </section>
   );
