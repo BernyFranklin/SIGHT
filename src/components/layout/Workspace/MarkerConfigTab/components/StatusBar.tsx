@@ -1,17 +1,28 @@
 import type { Status } from '../types';
 
+export type StatusMessages = { new: string; dirty: string; clean: string };
+
+const DEFAULT_MESSAGES: StatusMessages = {
+  new: 'Please enter marker data for this project...',
+  dirty: 'The marker config has unsaved changes, please save before closing.',
+  clean: 'Marker config saved successfully.',
+};
+
 export function StatusBar({
   status,
   canSave,
   onSave,
   onCancel,
+  messages = DEFAULT_MESSAGES,
 }: {
   status: Status;
   canSave: boolean;
   onSave: () => void;
   onCancel: () => void;
+  messages?: StatusMessages;
 }) {
-  const { bg, text, message } = statusStyles(status);
+  const { bg, text } = statusStyles(status);
+  const message = messages[status];
   return (
     <div className={`flex shrink-0 items-center gap-3 border-b border-border px-4 py-2 ${bg}`}>
       <span className={`flex-1 text-sm ${text}`}>{message}</span>
@@ -34,25 +45,13 @@ export function StatusBar({
   );
 }
 
-function statusStyles(status: Status): { bg: string; text: string; message: string } {
+function statusStyles(status: Status): { bg: string; text: string } {
   switch (status) {
     case 'new':
-      return {
-        bg: 'bg-neutral-700',
-        text: 'text-white',
-        message: 'Please enter marker data for this project...',
-      };
+      return { bg: 'bg-neutral-700', text: 'text-white' };
     case 'dirty':
-      return {
-        bg: 'bg-red-700',
-        text: 'text-white',
-        message: 'The marker config has unsaved changes, please save before closing.',
-      };
+      return { bg: 'bg-red-700', text: 'text-white' };
     case 'clean':
-      return {
-        bg: 'bg-green-700',
-        text: 'text-white',
-        message: 'Marker config saved successfully.',
-      };
+      return { bg: 'bg-green-700', text: 'text-white' };
   }
 }
