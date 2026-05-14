@@ -4,11 +4,13 @@ export function FieldRow({
   label,
   units,
   dimmed,
+  message,
   children,
 }: {
   label: string;
   units?: string;
   dimmed?: boolean;
+  message?: { text: string; tone: 'error' | 'warning' };
   children: React.ReactNode;
 }) {
   return (
@@ -19,6 +21,13 @@ export function FieldRow({
         {units && <span className="ml-1 normal-case tracking-normal text-text-muted/80">({units})</span>}
       </div>
       {children}
+      {message && (
+        <span
+          className={`text-xs ${message.tone === 'error' ? 'text-red-400' : 'text-amber-400'}`}
+        >
+          {message.text}
+        </span>
+      )}
     </div>
   );
 }

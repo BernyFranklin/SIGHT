@@ -22,7 +22,8 @@ function evalDependency(rule: DependencyRule | undefined, config: ProjectConfig)
 }
 
 export function ProjectConfigTab() {
-  const { config, status, canSave, setField, handleSave, handleCancel } = useProjectConfig();
+  const { config, status, canSave, errors, warnings, setField, handleSave, handleCancel } =
+    useProjectConfig();
 
   const renderField = (field: FieldSpec, groupId: string) => {
     const { hidden, dimmed } = evalDependency(field.dependsOn, config);
@@ -31,9 +32,14 @@ export function ProjectConfigTab() {
     const key = `${groupId}:${field.type === 'range-pair' ? `${field.minKey}__${field.maxKey}` : field.key}`;
 
     let input: React.ReactNode;
+    let message: { text: string; tone: 'error' | 'warning' } | undefined;
     switch (field.type) {
       case 'number-input': {
         const v = config[field.key] as number;
+        const err = errors[field.key];
+        const warn = warnings[field.key];
+        if (err) message = { text: err, tone: 'error' };
+        else if (warn) message = { text: warn, tone: 'warning' };
         input = (
           <NumberInput
             value={v}
@@ -41,12 +47,17 @@ export function ProjectConfigTab() {
             max={field.max}
             step={field.step}
             onChange={(n) => setField(field.key, n as ProjectConfig[ProjectConfigKey])}
+            invalid={Boolean(err)}
           />
         );
         break;
       }
       case 'range-slider': {
         const v = config[field.key] as number;
+        const err = errors[field.key];
+        const warn = warnings[field.key];
+        if (err) message = { text: err, tone: 'error' };
+        else if (warn) message = { text: warn, tone: 'warning' };
         input = (
           <RangeSlider
             value={v}
@@ -62,6 +73,8 @@ export function ProjectConfigTab() {
       case 'range-pair': {
         const minV = config[field.minKey] as number;
         const maxV = config[field.maxKey] as number;
+        const err = errors[field.minKey] ?? errors[field.maxKey];
+        if (err) message = { text: err, tone: 'error' };
         input = (
           <RangePair
             minValue={minV}
@@ -71,6 +84,7 @@ export function ProjectConfigTab() {
             step={field.step}
             onMinChange={(n) => setField(field.minKey, n as ProjectConfig[ProjectConfigKey])}
             onMaxChange={(n) => setField(field.maxKey, n as ProjectConfig[ProjectConfigKey])}
+            invalid={Boolean(err)}
           />
         );
         break;
@@ -100,7 +114,7 @@ export function ProjectConfigTab() {
     }
 
     return (
-      <FieldRow key={key} label={field.label} units={field.units} dimmed={dimmed}>
+      <FieldRow key={key} label={field.label} units={field.units} dimmed={dimmed} message={message}>
         {input}
       </FieldRow>
     );

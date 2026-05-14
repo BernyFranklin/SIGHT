@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { DEFAULT_CONFIG } from './constants';
 import type { ProjectConfig, ProjectConfigKey, Status } from './types';
+import { validate } from './validation';
 
 function configsEqual(a: ProjectConfig, b: ProjectConfig): boolean {
   const keys = Object.keys(DEFAULT_CONFIG) as ProjectConfigKey[];
@@ -25,7 +26,10 @@ export function useProjectConfig() {
     return configsEqual(saved, config) ? 'clean' : 'dirty';
   }, [saved, touched, config]);
 
-  const canSave = status === 'dirty';
+  const { errors, warnings } = useMemo(() => validate(config), [config]);
+  const hasErrors = Object.keys(errors).length > 0;
+
+  const canSave = status === 'dirty' && !hasErrors;
 
   const setField = <K extends ProjectConfigKey>(key: K, value: ProjectConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -51,6 +55,8 @@ export function useProjectConfig() {
     config,
     status,
     canSave,
+    errors,
+    warnings,
     setField,
     handleSave,
     handleCancel,
