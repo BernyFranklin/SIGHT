@@ -1,6 +1,9 @@
 import type { GroupSpec, ProjectConfig } from './types';
 
 export const DEFAULT_CONFIG: ProjectConfig = {
+  // Group 0: Project Info
+  project_description: '',
+
   // Group 1: Saccade Detection
   saccade_min_velocity: 30,
   saccade_max_velocity: 1000,
@@ -53,6 +56,21 @@ export const STATUS_MESSAGES = {
 };
 
 export const GROUPS: GroupSpec[] = [
+  {
+    id: 'info',
+    title: 'Project Info',
+    fields: [
+      {
+        type: 'text-area',
+        key: 'project_description',
+        label: 'Project Description',
+        default: '',
+        maxLength: 500,
+        rows: 4,
+        placeholder: 'Briefly describe this project — purpose, stimulus, population, etc.',
+      },
+    ],
+  },
   {
     id: 'saccade',
     title: 'Saccade Detection',

@@ -7,6 +7,9 @@ export type PupilBaselineCorrection = 'subtraction' | 'percent_change' | 'z_scor
 export type PupilBlinkInterpolation = 'linear' | 'cubic_spline' | 'none';
 
 export type ProjectConfig = {
+  // Group 0: Project Info
+  project_description: string;
+
   // Group 1: Saccade Detection
   saccade_min_velocity: number;
   saccade_max_velocity: number;
@@ -55,6 +58,7 @@ export type ProjectConfig = {
 export type ProjectConfigKey = keyof ProjectConfig;
 
 export type InputType =
+  | 'text-area'
   | 'number-input'
   | 'range-slider'
   | 'range-pair'
@@ -70,6 +74,14 @@ type BaseSpec<K extends ProjectConfigKey> = {
   key: K;
   label: string;
   units?: string;
+};
+
+export type TextAreaSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
+  type: 'text-area';
+  default: string;
+  maxLength: number;
+  rows?: number;
+  placeholder?: string;
 };
 
 export type NumberInputSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
@@ -122,6 +134,7 @@ export type DependencyRule = {
 };
 
 export type FieldSpec =
+  | (TextAreaSpec & { dependsOn?: DependencyRule })
   | (NumberInputSpec & { dependsOn?: DependencyRule })
   | (RangeSliderSpec & { dependsOn?: DependencyRule })
   | (RangePairSpec & { dependsOn?: DependencyRule })

@@ -6,6 +6,7 @@ import { NumberInput } from './components/NumberInput';
 import { RadioGroup } from './components/RadioGroup';
 import { RangePair } from './components/RangePair';
 import { RangeSlider } from './components/RangeSlider';
+import { TextArea } from './components/TextArea';
 import { ToggleSwitch } from './components/ToggleSwitch';
 import { GROUPS, STATUS_MESSAGES } from './constants';
 import type { DependencyRule, FieldSpec, ProjectConfig, ProjectConfigKey } from './types';
@@ -34,6 +35,19 @@ export function ProjectConfigTab() {
     let input: React.ReactNode;
     let message: { text: string; tone: 'error' | 'warning' } | undefined;
     switch (field.type) {
+      case 'text-area': {
+        const v = config[field.key] as string;
+        input = (
+          <TextArea
+            value={v}
+            maxLength={field.maxLength}
+            rows={field.rows}
+            placeholder={field.placeholder}
+            onChange={(s) => setField(field.key, s as ProjectConfig[ProjectConfigKey])}
+          />
+        );
+        break;
+      }
       case 'number-input': {
         const v = config[field.key] as number;
         const err = errors[field.key];
