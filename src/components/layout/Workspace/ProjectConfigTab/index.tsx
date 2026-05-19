@@ -1,11 +1,13 @@
 import { StatusBar } from '../MarkerConfigTab/components/StatusBar';
 
+import { Dropdown } from './components/Dropdown';
 import { FieldRow } from './components/FieldRow';
 import { Group } from './components/Group';
 import { NumberInput } from './components/NumberInput';
 import { RadioGroup } from './components/RadioGroup';
 import { RangePair } from './components/RangePair';
 import { RangeSlider } from './components/RangeSlider';
+import { ReadOnlyValue } from './components/ReadOnlyValue';
 import { TextArea } from './components/TextArea';
 import { ToggleSwitch } from './components/ToggleSwitch';
 import { GROUPS, STATUS_MESSAGES } from './constants';
@@ -30,7 +32,13 @@ export function ProjectConfigTab() {
     const { hidden, dimmed } = evalDependency(field.dependsOn, config);
     if (hidden) return null;
 
-    const key = `${groupId}:${field.type === 'range-pair' ? `${field.minKey}__${field.maxKey}` : field.key}`;
+    const key = `${groupId}:${
+      field.type === 'range-pair'
+        ? `${field.minKey}__${field.maxKey}`
+        : field.type === 'read-only'
+          ? `readonly__${field.label}`
+          : field.key
+    }`;
 
     let input: React.ReactNode;
     let message: { text: string; tone: 'error' | 'warning' } | undefined;
@@ -49,7 +57,7 @@ export function ProjectConfigTab() {
         break;
       }
       case 'number-input': {
-        const v = config[field.key] as number;
+        const v = config[field.key] as number | null;
         const err = errors[field.key];
         const warn = warnings[field.key];
         if (err) message = { text: err, tone: 'error' };
@@ -60,6 +68,7 @@ export function ProjectConfigTab() {
             min={field.min}
             max={field.max}
             step={field.step}
+            nullable={field.nullable}
             onChange={(n) => setField(field.key, n as ProjectConfig[ProjectConfigKey])}
             invalid={Boolean(err)}
           />
@@ -123,6 +132,45 @@ export function ProjectConfigTab() {
             onChange={(b) => setField(field.key, b as ProjectConfig[ProjectConfigKey])}
           />
         );
+        break;
+      }
+      case 'dropdown': {
+        const v = config[field.key] as string;
+        const err = errors[field.key];
+        if (err) message = { text: err, tone: 'error' };
+        const showOther = field.otherTrigger && v === field.otherTrigger.value;
+        const otherKey = field.otherTrigger?.otherKey;
+        const otherErr = otherKey ? errors[otherKey] : undefined;
+        if (!err && otherErr) message = { text: otherErr, tone: 'error' };
+        input = (
+          <div className="flex flex-wrap items-center gap-2">
+            <Dropdown
+              value={v}
+              options={field.options}
+              onChange={(s) => setField(field.key, s as ProjectConfig[ProjectConfigKey])}
+              placeholder={field.placeholder}
+              invalid={Boolean(err)}
+            />
+            {showOther && otherKey && (
+              <input
+                type="text"
+                value={config[otherKey] as string}
+                maxLength={field.otherTrigger?.maxLength}
+                placeholder={field.otherTrigger?.placeholder}
+                onChange={(e) =>
+                  setField(otherKey, e.target.value as ProjectConfig[ProjectConfigKey])
+                }
+                className={`w-48 rounded-sm border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary ${
+                  otherErr ? 'border-red-500' : 'border-border'
+                }`}
+              />
+            )}
+          </div>
+        );
+        break;
+      }
+      case 'read-only': {
+        input = <ReadOnlyValue value={field.compute(config)} />;
         break;
       }
     }

@@ -112,6 +112,8 @@ export type NumberInputSpec<K extends ProjectConfigKey = ProjectConfigKey> = Bas
   min: number;
   max: number;
   step: number;
+  /** When true, an empty input commits null instead of being ignored. */
+  nullable?: boolean;
 };
 
 export type RangeSliderSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {

@@ -26,7 +26,7 @@ export function RangePair({
         min={minBounds.min}
         max={minBounds.max}
         step={step}
-        onChange={onMinChange}
+        onChange={(n) => { if (n != null) onMinChange(n); }}
         invalid={invalid}
       />
       <span className="text-xs uppercase tracking-wider text-text-muted">to</span>
@@ -35,7 +35,7 @@ export function RangePair({
         min={maxBounds.min}
         max={maxBounds.max}
         step={step}
-        onChange={onMaxChange}
+        onChange={(n) => { if (n != null) onMaxChange(n); }}
         invalid={invalid}
       />
     </div>

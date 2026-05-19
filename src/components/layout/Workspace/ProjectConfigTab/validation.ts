@@ -41,5 +41,68 @@ export function validate(config: ProjectConfig): { errors: FieldErrors; warnings
     warnings.epoch_pre_stimulus_window = msg;
   }
 
+  validateIntInRange(
+    config.demographics_age_enabled,
+    config.demographics_age,
+    'demographics_age',
+    5,
+    120,
+    'Age',
+    errors,
+  );
+
+  if (config.demographics_gender_enabled) {
+    if (!config.demographics_gender) {
+      errors.demographics_gender = 'Gender is required.';
+    } else if (
+      config.demographics_gender === 'Other'
+      && !config.demographics_gender_other.trim()
+    ) {
+      errors.demographics_gender_other = 'Please specify.';
+    }
+  }
+
+  validateIntInRange(
+    config.demographics_asrs_enabled,
+    config.demographics_asrs_inattention,
+    'demographics_asrs_inattention',
+    0,
+    36,
+    'Inattention',
+    errors,
+  );
+  validateIntInRange(
+    config.demographics_asrs_enabled,
+    config.demographics_asrs_hyperactivity,
+    'demographics_asrs_hyperactivity',
+    0,
+    36,
+    'Hyperactivity',
+    errors,
+  );
+
   return { errors, warnings };
+}
+
+function validateIntInRange(
+  enabled: boolean,
+  value: number | null,
+  key: ProjectConfigKey,
+  min: number,
+  max: number,
+  label: string,
+  errors: FieldErrors,
+) {
+  if (!enabled) return;
+  if (value == null) {
+    errors[key] = `${label} is required.`;
+    return;
+  }
+  if (!Number.isInteger(value)) {
+    errors[key] = `${label} must be a whole number.`;
+    return;
+  }
+  if (value < min || value > max) {
+    errors[key] = `${label} must be between ${min} and ${max}.`;
+  }
 }

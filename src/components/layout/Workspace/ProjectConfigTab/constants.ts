@@ -409,6 +409,7 @@ export const GROUPS: GroupSpec[] = [
         min: 5,
         max: 120,
         step: 1,
+        nullable: true,
         dependsOn: { key: 'demographics_age_enabled', equals: true, mode: 'dimmed' },
       },
       {
@@ -447,6 +448,7 @@ export const GROUPS: GroupSpec[] = [
         min: 0,
         max: 36,
         step: 1,
+        nullable: true,
         dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
       },
       {
@@ -458,6 +460,7 @@ export const GROUPS: GroupSpec[] = [
         min: 0,
         max: 36,
         step: 1,
+        nullable: true,
         dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
       },
       {
