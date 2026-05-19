@@ -6,6 +6,15 @@ export type PupilBaselineCorrection = 'subtraction' | 'percent_change' | 'z_scor
 
 export type PupilBlinkInterpolation = 'linear' | 'cubic_spline' | 'none';
 
+export type CustomAttributeType = 'number' | 'text' | 'dropdown';
+
+export type CustomAttribute = {
+  id: string;
+  label: string;
+  type: CustomAttributeType;
+  options: string[];
+};
+
 export type ProjectConfig = {
   // Group 0: Project Info
   project_description: string;
@@ -53,6 +62,17 @@ export type ProjectConfig = {
   focus_min_distance: number;
   focus_max_distance: number;
   focus_min_stability: number;
+
+  // Group 7: Demographic & Clinical Metadata
+  demographics_age_enabled: boolean;
+  demographics_age: number | null;
+  demographics_gender_enabled: boolean;
+  demographics_gender: string;
+  demographics_gender_other: string;
+  demographics_asrs_enabled: boolean;
+  demographics_asrs_inattention: number | null;
+  demographics_asrs_hyperactivity: number | null;
+  demographics_custom_attributes: CustomAttribute[];
 };
 
 export type ProjectConfigKey = keyof ProjectConfig;
@@ -63,7 +83,9 @@ export type InputType =
   | 'range-slider'
   | 'range-pair'
   | 'radio-group'
-  | 'toggle-switch';
+  | 'toggle-switch'
+  | 'dropdown'
+  | 'read-only';
 
 export type RadioOption<T extends string = string> = {
   value: T;
@@ -125,6 +147,27 @@ export type ToggleSwitchSpec<K extends ProjectConfigKey = ProjectConfigKey> = Ba
   default: boolean;
 };
 
+export type DropdownOption = {
+  value: string;
+  label: string;
+};
+
+export type DropdownSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
+  type: 'dropdown';
+  default: string;
+  options: DropdownOption[];
+  placeholder?: string;
+  /** When set, selecting this value reveals a free-text field bound to `otherKey`. */
+  otherTrigger?: { value: string; otherKey: ProjectConfigKey; placeholder?: string; maxLength?: number };
+};
+
+export type ReadOnlySpec = {
+  type: 'read-only';
+  label: string;
+  units?: string;
+  compute: (config: ProjectConfig) => string | null;
+};
+
 /** When the dependent key matches `equals`, this field is shown/enabled; otherwise hidden or dimmed. */
 export type DependencyRule = {
   key: ProjectConfigKey;
@@ -139,7 +182,9 @@ export type FieldSpec =
   | (RangeSliderSpec & { dependsOn?: DependencyRule })
   | (RangePairSpec & { dependsOn?: DependencyRule })
   | (RadioGroupSpec & { dependsOn?: DependencyRule })
-  | (ToggleSwitchSpec & { dependsOn?: DependencyRule });
+  | (ToggleSwitchSpec & { dependsOn?: DependencyRule })
+  | (DropdownSpec & { dependsOn?: DependencyRule })
+  | (ReadOnlySpec & { dependsOn?: DependencyRule });
 
 export type GroupSpec = {
   id: string;

@@ -47,7 +47,28 @@ export const DEFAULT_CONFIG: ProjectConfig = {
   focus_min_distance: 0.2,
   focus_max_distance: 10.0,
   focus_min_stability: 0.3,
+
+  // Group 7: Demographic & Clinical Metadata
+  demographics_age_enabled: false,
+  demographics_age: null,
+  demographics_gender_enabled: false,
+  demographics_gender: '',
+  demographics_gender_other: '',
+  demographics_asrs_enabled: false,
+  demographics_asrs_inattention: null,
+  demographics_asrs_hyperactivity: null,
+  demographics_custom_attributes: [],
 };
+
+export const GENDER_OPTIONS = [
+  { value: 'Male', label: 'Male' },
+  { value: 'Female', label: 'Female' },
+  { value: 'Non-binary', label: 'Non-binary' },
+  { value: 'Prefer not to say', label: 'Prefer not to say' },
+  { value: 'Other', label: 'Other' },
+];
+
+export const MAX_CUSTOM_ATTRIBUTES = 20;
 
 export const STATUS_MESSAGES = {
   new: 'Please enter project configuration for this project...',
@@ -366,6 +387,90 @@ export const GROUPS: GroupSpec[] = [
         min: 5,
         max: 50,
         step: 1,
+      },
+    ],
+  },
+  {
+    id: 'demographics',
+    title: 'Demographic & Clinical Metadata',
+    fields: [
+      {
+        type: 'toggle-switch',
+        key: 'demographics_age_enabled',
+        label: 'Age',
+        default: false,
+      },
+      {
+        type: 'number-input',
+        key: 'demographics_age',
+        label: 'Age',
+        units: 'years',
+        default: 18,
+        min: 5,
+        max: 120,
+        step: 1,
+        dependsOn: { key: 'demographics_age_enabled', equals: true, mode: 'dimmed' },
+      },
+      {
+        type: 'toggle-switch',
+        key: 'demographics_gender_enabled',
+        label: 'Gender',
+        default: false,
+      },
+      {
+        type: 'dropdown',
+        key: 'demographics_gender',
+        label: 'Gender',
+        default: '',
+        options: GENDER_OPTIONS,
+        placeholder: 'Select...',
+        otherTrigger: {
+          value: 'Other',
+          otherKey: 'demographics_gender_other',
+          placeholder: 'Please specify',
+          maxLength: 50,
+        },
+        dependsOn: { key: 'demographics_gender_enabled', equals: true, mode: 'dimmed' },
+      },
+      {
+        type: 'toggle-switch',
+        key: 'demographics_asrs_enabled',
+        label: 'ASRS v1.1',
+        default: false,
+      },
+      {
+        type: 'number-input',
+        key: 'demographics_asrs_inattention',
+        label: 'Inattention',
+        units: 'score',
+        default: 0,
+        min: 0,
+        max: 36,
+        step: 1,
+        dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
+      },
+      {
+        type: 'number-input',
+        key: 'demographics_asrs_hyperactivity',
+        label: 'Hyperactivity/Impulsivity',
+        units: 'score',
+        default: 0,
+        min: 0,
+        max: 36,
+        step: 1,
+        dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
+      },
+      {
+        type: 'read-only',
+        label: 'Total',
+        units: 'score',
+        compute: (config) => {
+          const i = config.demographics_asrs_inattention;
+          const h = config.demographics_asrs_hyperactivity;
+          if (i == null || h == null) return null;
+          return String(i + h);
+        },
+        dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
       },
     ],
   },
