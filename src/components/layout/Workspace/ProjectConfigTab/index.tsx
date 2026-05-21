@@ -1,5 +1,6 @@
 import { StatusBar } from '../MarkerConfigTab/components/StatusBar';
 
+import { CustomAttributeBuilder } from './components/CustomAttributeBuilder';
 import { Dropdown } from './components/Dropdown';
 import { FieldRow } from './components/FieldRow';
 import { Group } from './components/Group';
@@ -25,8 +26,20 @@ function evalDependency(rule: DependencyRule | undefined, config: ProjectConfig)
 }
 
 export function ProjectConfigTab() {
-  const { config, status, canSave, errors, warnings, setField, handleSave, handleCancel } =
-    useProjectConfig();
+  const {
+    config,
+    status,
+    canSave,
+    errors,
+    warnings,
+    setField,
+    handleSave,
+    handleCancel,
+    addCustomAttribute,
+    updateCustomAttribute,
+    deleteCustomAttribute,
+    reorderCustomAttributes,
+  } = useProjectConfig();
 
   const renderField = (field: FieldSpec, groupId: string) => {
     const { hidden, dimmed } = evalDependency(field.dependsOn, config);
@@ -196,6 +209,16 @@ export function ProjectConfigTab() {
           {GROUPS.map((group) => (
             <Group key={group.id} title={group.title}>
               {group.fields.map((f) => renderField(f, group.id))}
+              {group.id === 'demographics' && (
+                <CustomAttributeBuilder
+                  attributes={config.demographics_custom_attributes}
+                  errors={{}}
+                  onAdd={addCustomAttribute}
+                  onUpdate={updateCustomAttribute}
+                  onDelete={deleteCustomAttribute}
+                  onReorder={reorderCustomAttributes}
+                />
+              )}
             </Group>
           ))}
         </div>
