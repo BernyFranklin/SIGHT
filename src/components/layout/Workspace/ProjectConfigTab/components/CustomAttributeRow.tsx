@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 
@@ -26,12 +28,47 @@ export function CustomAttributeRow({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: attribute.id,
   });
+  const [confirming, setConfirming] = useState(false);
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.6 : 1,
   };
+
+  if (confirming) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex flex-col gap-2 rounded-sm border border-red-500/60 bg-bg p-2"
+      >
+        <p className="text-xs text-text">
+          Delete <span className="font-semibold">{attribute.label || 'this attribute'}</span>?
+          Existing participant data for this field will be permanently removed.
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            className="rounded-sm border border-border bg-surface px-2 py-1 text-xs text-text hover:border-primary"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setConfirming(false);
+              onDelete();
+            }}
+            className="rounded-sm border border-red-500 bg-red-500/10 px-2 py-1 text-xs text-red-400 hover:bg-red-500/20"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -83,7 +120,7 @@ export function CustomAttributeRow({
         </div>
         <button
           type="button"
-          onClick={onDelete}
+          onClick={() => setConfirming(true)}
           aria-label="Delete attribute"
           className="mt-1 text-text-muted hover:text-red-500"
         >

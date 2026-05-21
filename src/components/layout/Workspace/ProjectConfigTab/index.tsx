@@ -32,6 +32,7 @@ export function ProjectConfigTab() {
     canSave,
     errors,
     warnings,
+    customAttributeErrors,
     setField,
     handleSave,
     handleCancel,
@@ -212,7 +213,7 @@ export function ProjectConfigTab() {
               {group.id === 'demographics' && (
                 <CustomAttributeBuilder
                   attributes={config.demographics_custom_attributes}
-                  errors={{}}
+                  errors={customAttributeErrors}
                   onAdd={addCustomAttribute}
                   onUpdate={updateCustomAttribute}
                   onDelete={deleteCustomAttribute}

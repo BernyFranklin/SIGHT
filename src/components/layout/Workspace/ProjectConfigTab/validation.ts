@@ -1,7 +1,9 @@
+import { MAX_CUSTOM_ATTRIBUTES } from './constants';
 import type { ProjectConfig, ProjectConfigKey } from './types';
 
 export type FieldErrors = Partial<Record<ProjectConfigKey, string>>;
 export type FieldWarnings = Partial<Record<ProjectConfigKey, string>>;
+export type CustomAttributeErrors = Record<string, { label?: string; options?: string }>;
 
 type Pair = {
   minKey: ProjectConfigKey;
@@ -17,9 +19,14 @@ const ORDERED_PAIRS: Pair[] = [
   { minKey: 'focus_min_distance', maxKey: 'focus_max_distance', label: 'Focus distance' },
 ];
 
-export function validate(config: ProjectConfig): { errors: FieldErrors; warnings: FieldWarnings } {
+export function validate(config: ProjectConfig): {
+  errors: FieldErrors;
+  warnings: FieldWarnings;
+  customAttributeErrors: CustomAttributeErrors;
+} {
   const errors: FieldErrors = {};
   const warnings: FieldWarnings = {};
+  const customAttributeErrors: CustomAttributeErrors = {};
 
   for (const { minKey, maxKey, label } of ORDERED_PAIRS) {
     const minV = config[minKey] as number;
@@ -81,7 +88,41 @@ export function validate(config: ProjectConfig): { errors: FieldErrors; warnings
     errors,
   );
 
-  return { errors, warnings };
+  const attrs = config.demographics_custom_attributes;
+  const labelCounts = new Map<string, number>();
+  for (const a of attrs) {
+    const key = a.label.trim().toLowerCase();
+    if (key) labelCounts.set(key, (labelCounts.get(key) ?? 0) + 1);
+  }
+  for (const a of attrs) {
+    const labelTrimmed = a.label.trim();
+    const labelKey = labelTrimmed.toLowerCase();
+    let labelErr: string | undefined;
+    let optionsErr: string | undefined;
+    if (!labelTrimmed) {
+      labelErr = 'Label is required.';
+    } else if ((labelCounts.get(labelKey) ?? 0) > 1) {
+      labelErr = 'Label must be unique.';
+    }
+    if (a.type === 'dropdown' && a.options.length < 2) {
+      optionsErr = 'At least 2 options are required.';
+    }
+    if (labelErr || optionsErr) {
+      customAttributeErrors[a.id] = { label: labelErr, options: optionsErr };
+    }
+  }
+  if (attrs.length > MAX_CUSTOM_ATTRIBUTES) {
+    // Defensive: builder UI prevents this, but flag it on the last over-limit row.
+    const overflow = attrs[MAX_CUSTOM_ATTRIBUTES];
+    if (overflow) {
+      customAttributeErrors[overflow.id] = {
+        ...customAttributeErrors[overflow.id],
+        label: `Maximum ${MAX_CUSTOM_ATTRIBUTES} attributes.`,
+      };
+    }
+  }
+
+  return { errors, warnings, customAttributeErrors };
 }
 
 function validateIntInRange(

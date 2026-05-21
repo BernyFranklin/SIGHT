@@ -56,8 +56,9 @@ export function useProjectConfig() {
     return configsEqual(saved, config) ? 'clean' : 'dirty';
   }, [saved, touched, config]);
 
-  const { errors, warnings } = useMemo(() => validate(config), [config]);
-  const hasErrors = Object.keys(errors).length > 0;
+  const { errors, warnings, customAttributeErrors } = useMemo(() => validate(config), [config]);
+  const hasErrors =
+    Object.keys(errors).length > 0 || Object.keys(customAttributeErrors).length > 0;
 
   const canSave = status === 'dirty' && !hasErrors;
 
@@ -123,6 +124,7 @@ export function useProjectConfig() {
     canSave,
     errors,
     warnings,
+    customAttributeErrors,
     setField,
     handleSave,
     handleCancel,
