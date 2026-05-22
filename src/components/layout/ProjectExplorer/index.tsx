@@ -109,8 +109,8 @@ function ProjectNode({
             }}
             aria-haspopup="menu"
             aria-expanded={configOpen}
-            aria-label="Configure project"
-            title="Configure project"
+            aria-label="Configure Project"
+            title="Configure Project"
             className={`shrink-0 rounded-sm p-0.5 text-text-muted transition-opacity hover:text-text ${cogVisibility}`}
           >
             <Settings size={14} />
