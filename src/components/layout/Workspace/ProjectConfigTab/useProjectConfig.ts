@@ -1,7 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+import { projectConfigApi, type ProjectConfigFile } from '@app/api/projectConfig';
+import { useProjectStore } from '@app/store/useProjectStore';
 
 import { DEFAULT_CONFIG } from './constants';
-import type { CustomAttribute, ProjectConfig, ProjectConfigKey, Status } from './types';
+import type {
+  CustomAttribute,
+  FixationAlgorithm,
+  ProjectConfig,
+  ProjectConfigKey,
+  PupilBaselineCorrection,
+  PupilBlinkInterpolation,
+  Status,
+} from './types';
 import { validate } from './validation';
 
 function valuesEqual(a: unknown, b: unknown): boolean {
@@ -46,10 +57,48 @@ function newAttributeId(): string {
   return `attr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function useProjectConfig() {
+function fromFile(file: ProjectConfigFile): ProjectConfig {
+  const base = cloneConfig(DEFAULT_CONFIG);
+  return {
+    ...base,
+    ...(file as unknown as Partial<ProjectConfig>),
+    fixation_algorithm: (file.fixation_algorithm as FixationAlgorithm) ?? base.fixation_algorithm,
+    pupil_baseline_correction_method:
+      (file.pupil_baseline_correction_method as PupilBaselineCorrection)
+        ?? base.pupil_baseline_correction_method,
+    pupil_blink_interpolation_method:
+      (file.pupil_blink_interpolation_method as PupilBlinkInterpolation)
+        ?? base.pupil_blink_interpolation_method,
+    demographics_custom_attributes: Array.isArray(file.demographics_custom_attributes)
+      ? file.demographics_custom_attributes.map((a) => ({
+        ...a,
+        options: Array.isArray(a.options) ? [...a.options] : [],
+      }))
+      : [],
+  };
+}
+
+export function useProjectConfig(projectPath: string) {
   const [config, setConfig] = useState<ProjectConfig>(() => cloneConfig(DEFAULT_CONFIG));
   const [saved, setSaved] = useState<ProjectConfig | null>(null);
   const [touched, setTouched] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!projectPath) return;
+    let cancelled = false;
+    (async () => {
+      const file = await projectConfigApi.read(projectPath);
+      if (cancelled || !file) return;
+      const loaded = fromFile(file);
+      setConfig(cloneConfig(loaded));
+      setSaved(cloneConfig(loaded));
+      setTouched(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectPath]);
 
   const status: Status = useMemo(() => {
     if (!saved) return touched ? 'dirty' : 'new';
@@ -60,7 +109,7 @@ export function useProjectConfig() {
   const hasErrors =
     Object.keys(errors).length > 0 || Object.keys(customAttributeErrors).length > 0;
 
-  const canSave = status === 'dirty' && !hasErrors;
+  const canSave = status === 'dirty' && !hasErrors && !saving;
 
   const setField = <K extends ProjectConfigKey>(key: K, value: ProjectConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -103,10 +152,20 @@ export function useProjectConfig() {
     setTouched(true);
   };
 
-  const handleSave = () => {
-    if (!canSave) return;
-    setSaved(cloneConfig(config));
-    setTouched(false);
+  const handleSave = async () => {
+    if (!canSave || !projectPath) return;
+    const snapshot = cloneConfig(config);
+    setSaving(true);
+    try {
+      await projectConfigApi.write(projectPath, snapshot as unknown as ProjectConfigFile);
+      setSaved(snapshot);
+      setTouched(false);
+      await useProjectStore.getState().refreshProjectConfig(projectPath);
+    } catch (err) {
+      console.error('[useProjectConfig] failed to save project config', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -122,6 +181,7 @@ export function useProjectConfig() {
     config,
     status,
     canSave,
+    saving,
     errors,
     warnings,
     customAttributeErrors,

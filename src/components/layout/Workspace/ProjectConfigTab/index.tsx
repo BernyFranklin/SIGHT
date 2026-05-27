@@ -1,3 +1,5 @@
+import type { Tab } from '@app/store/useWorkspaceStore';
+
 import { StatusBar } from '../MarkerConfigTab/components/StatusBar';
 
 import { CustomAttributeBuilder } from './components/CustomAttributeBuilder';
@@ -25,7 +27,7 @@ function evalDependency(rule: DependencyRule | undefined, config: ProjectConfig)
   return { hidden: false, dimmed: !match };
 }
 
-export function ProjectConfigTab() {
+export function ProjectConfigTab({ tab }: { tab: Tab }) {
   const {
     config,
     status,
@@ -40,7 +42,7 @@ export function ProjectConfigTab() {
     updateCustomAttribute,
     deleteCustomAttribute,
     reorderCustomAttributes,
-  } = useProjectConfig();
+  } = useProjectConfig(tab.projectPath ?? '');
 
   const renderField = (field: FieldSpec, groupId: string) => {
     const { hidden, dimmed } = evalDependency(field.dependsOn, config);
