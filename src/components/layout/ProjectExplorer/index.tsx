@@ -8,6 +8,7 @@ export function ProjectExplorer() {
   const open = useProjectStore((s) => s.open);
   const activePath = useProjectStore((s) => s.activePath);
   const hasMarkers = useProjectStore((s) => s.hasMarkers);
+  const hasProjectConfig = useProjectStore((s) => s.hasProjectConfig);
   const setActive = useProjectStore((s) => s.setActive);
 
   return (
@@ -22,6 +23,7 @@ export function ProjectExplorer() {
           name={p.name}
           isActive={p.path === activePath}
           hasMarkers={!!hasMarkers[p.path]}
+          hasProjectConfig={!!hasProjectConfig[p.path]}
           onActivate={() => setActive(p.path)}
         />
       ))}
@@ -34,12 +36,14 @@ function ProjectNode({
   name,
   isActive,
   hasMarkers,
+  hasProjectConfig,
   onActivate,
 }: {
   path: string;
   name: string;
   isActive: boolean;
   hasMarkers: boolean;
+  hasProjectConfig: boolean;
   onActivate: () => void;
 }) {
   const openTab = useWorkspaceStore((s) => s.openTab);
@@ -72,6 +76,15 @@ function ProjectNode({
       id: `marker-config:${path}`,
       title: 'Marker Config',
       kind: 'marker-config',
+      closable: true,
+      projectPath: path,
+    });
+
+  const openProjectConfigTab = () =>
+    openTab({
+      id: `project-config:${path}`,
+      title: 'Project Config',
+      kind: 'project-config',
       closable: true,
       projectPath: path,
     });
@@ -123,21 +136,20 @@ function ProjectNode({
               }}
               onCreateProjectConfig={() => {
                 setConfigOpen(false);
-                openTab({
-                  id: `project-config:${path}`,
-                  title: 'Project Config',
-                  kind: 'project-config',
-                  closable: true,
-                  projectPath: path,
-                });
+                openProjectConfigTab();
               }}
             />
           )}
         </div>
       </div>
       {expanded && (
-        hasMarkers ? (
-          <ConfigFolder onOpenMarkers={openMarkerConfigTab} />
+        hasMarkers || hasProjectConfig ? (
+          <ConfigFolder
+            hasMarkers={hasMarkers}
+            hasProjectConfig={hasProjectConfig}
+            onOpenMarkers={openMarkerConfigTab}
+            onOpenProject={openProjectConfigTab}
+          />
         ) : (
           <div className="px-3 py-1 text-xs italic text-text-muted opacity-70">
             This project is empty!
@@ -148,7 +160,17 @@ function ProjectNode({
   );
 }
 
-function ConfigFolder({ onOpenMarkers }: { onOpenMarkers: () => void }) {
+function ConfigFolder({
+  hasMarkers,
+  hasProjectConfig,
+  onOpenMarkers,
+  onOpenProject,
+}: {
+  hasMarkers: boolean;
+  hasProjectConfig: boolean;
+  onOpenMarkers: () => void;
+  onOpenProject: () => void;
+}) {
   const [expanded, setExpanded] = useState(true);
   const Chevron = expanded ? ChevronDown : ChevronRight;
   return (
@@ -163,13 +185,26 @@ function ConfigFolder({ onOpenMarkers }: { onOpenMarkers: () => void }) {
         <span className="truncate">Config</span>
       </button>
       {expanded && (
-        <button
-          type="button"
-          onClick={onOpenMarkers}
-          className="flex items-center gap-1 px-4 py-0.5 pl-9 text-left text-sm text-text hover:bg-bg/80"
-        >
-          <span className="truncate">Markers</span>
-        </button>
+        <>
+          {hasMarkers && (
+            <button
+              type="button"
+              onClick={onOpenMarkers}
+              className="flex items-center gap-1 px-4 py-0.5 pl-9 text-left text-sm text-text hover:bg-bg/80"
+            >
+              <span className="truncate">Markers</span>
+            </button>
+          )}
+          {hasProjectConfig && (
+            <button
+              type="button"
+              onClick={onOpenProject}
+              className="flex items-center gap-1 px-4 py-0.5 pl-9 text-left text-sm text-text hover:bg-bg/80"
+            >
+              <span className="truncate">Project</span>
+            </button>
+          )}
+        </>
       )}
     </div>
   );
