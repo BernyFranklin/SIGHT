@@ -6,6 +6,7 @@ import started from 'electron-squirrel-startup';
 import { IpcChannels } from '../ipc';
 import { registerMarkersIpc } from '../ipc/markers';
 import { registerProjectIpc } from '../ipc/project';
+import { registerProjectConfigIpc } from '../ipc/projectConfig';
 
 if (started) {
   app.quit();
@@ -60,6 +61,7 @@ ipcMain.handle(IpcChannels.windowToggleDevTools, (event) => {
 
 registerProjectIpc(ipcMain);
 registerMarkersIpc(ipcMain);
+registerProjectConfigIpc(ipcMain);
 
 app.on('ready', createWindow);
 

@@ -13,6 +13,9 @@ export const IpcChannels = {
   markersRead: 'markers:read',
   markersWrite: 'markers:write',
   markersHas: 'markers:has',
+  projectConfigRead: 'project-config:read',
+  projectConfigWrite: 'project-config:write',
+  projectConfigHas: 'project-config:has',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
