@@ -22,6 +22,67 @@ export interface MarkersFile {
   markers: Marker[];
 }
 
+export type CustomAttributeType = 'number' | 'text' | 'dropdown';
+
+export interface CustomAttribute {
+  id: string;
+  label: string;
+  type: CustomAttributeType;
+  options: string[];
+}
+
+export interface ProjectConfigFile {
+  project_description: string;
+
+  saccade_min_velocity: number;
+  saccade_max_velocity: number;
+  saccade_min_duration: number;
+  saccade_max_duration: number;
+  saccade_min_amplitude: number;
+  saccade_max_amplitude: number;
+  saccade_refractory_period: number;
+  saccade_inter_saccadic_interval: number;
+  saccade_max_gap_for_velocity: number;
+  saccade_direction_filter_enabled: boolean;
+  saccade_direction_filter_angle: number;
+  saccade_direction_filter_tolerance: number;
+
+  fixation_min_duration: number;
+  fixation_max_dispersion: number;
+  fixation_algorithm: string;
+
+  pupil_baseline_window: number;
+  pupil_baseline_correction_method: string;
+  pupil_blink_interpolation_method: string;
+  pupil_blink_max_gap: number;
+  pupil_min_diameter: number;
+  pupil_max_diameter: number;
+  pupil_lr_asymmetry_tolerance: number;
+
+  quality_min_valid_frame_ratio: number;
+  quality_max_consecutive_invalid: number;
+  quality_eye_openness_threshold: number;
+
+  epoch_pre_stimulus_window: number;
+  epoch_post_stimulus_window: number;
+  epoch_artifact_sd_threshold: number;
+  epoch_artifact_max_ratio: number;
+
+  focus_min_distance: number;
+  focus_max_distance: number;
+  focus_min_stability: number;
+
+  demographics_age_enabled: boolean;
+  demographics_age: number | null;
+  demographics_gender_enabled: boolean;
+  demographics_gender: string;
+  demographics_gender_other: string;
+  demographics_asrs_enabled: boolean;
+  demographics_asrs_inattention: number | null;
+  demographics_asrs_hyperactivity: number | null;
+  demographics_custom_attributes: CustomAttribute[];
+}
+
 const windowControls = {
   minimize: () => ipcRenderer.invoke(IpcChannels.windowMinimize),
   toggleMaximize: () => ipcRenderer.invoke(IpcChannels.windowToggleMaximize),
@@ -56,8 +117,18 @@ const markers = {
     ipcRenderer.invoke(IpcChannels.markersHas, projectPath),
 };
 
-contextBridge.exposeInMainWorld('api', { windowControls, project, markers });
+const projectConfig = {
+  read: (projectPath: string): Promise<ProjectConfigFile | null> =>
+    ipcRenderer.invoke(IpcChannels.projectConfigRead, projectPath),
+  write: (projectPath: string, data: ProjectConfigFile): Promise<void> =>
+    ipcRenderer.invoke(IpcChannels.projectConfigWrite, projectPath, data),
+  has: (projectPath: string): Promise<boolean> =>
+    ipcRenderer.invoke(IpcChannels.projectConfigHas, projectPath),
+};
+
+contextBridge.exposeInMainWorld('api', { windowControls, project, markers, projectConfig });
 
 export type WindowControlsApi = typeof windowControls;
 export type ProjectApi = typeof project;
 export type MarkersApi = typeof markers;
+export type ProjectConfigApi = typeof projectConfig;
