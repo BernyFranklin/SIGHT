@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { markersApi } from '@app/api/markers';
 import { type Project, projectApi } from '@app/api/project';
 import { projectConfigApi } from '@app/api/projectConfig';
+import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
 
 interface ProjectState {
   open: Project[];
@@ -103,10 +104,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
   setActive: (path) => set({ activePath: path }),
 
-  closeActive: () => set((s) => {
-    if (!s.activePath) return s;
-    const open = s.open.filter((p) => p.path !== s.activePath);
-    const activePath = open.length ? open[open.length - 1].path : null;
-    return { open, activePath };
-  }),
+  closeActive: () => {
+    const closedPath = useProjectStore.getState().activePath;
+    if (!closedPath) return;
+    set((s) => {
+      const open = s.open.filter((p) => p.path !== closedPath);
+      const activePath = open.length ? open[open.length - 1].path : null;
+      return { open, activePath };
+    });
+    const workspace = useWorkspaceStore.getState();
+    workspace.tabs
+      .filter((t) => t.projectPath === closedPath)
+      .forEach((t) => workspace.closeTab(t.id));
+  },
 }));
