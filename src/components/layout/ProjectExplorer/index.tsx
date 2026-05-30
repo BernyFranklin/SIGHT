@@ -1,7 +1,11 @@
+import { ChevronDown, ChevronRight, Settings, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, Settings } from 'lucide-react';
-import { useProjectStore } from '@app/store/useProjectStore';
+
+import type { ProjectConfigFile } from '@app/api/projectConfig';
+import { type CaseRecord, useProjectStore } from '@app/store/useProjectStore';
 import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
+
+import { isCaseIncomplete } from '../Workspace/NewCaseTab/schema';
 
 // COLOR/SIZE: pane bg = --color-surface, right border = --color-border; width 20%.
 export function ProjectExplorer() {
@@ -9,6 +13,8 @@ export function ProjectExplorer() {
   const activePath = useProjectStore((s) => s.activePath);
   const hasMarkers = useProjectStore((s) => s.hasMarkers);
   const hasProjectConfig = useProjectStore((s) => s.hasProjectConfig);
+  const cases = useProjectStore((s) => s.cases);
+  const projectConfigs = useProjectStore((s) => s.projectConfigs);
   const setActive = useProjectStore((s) => s.setActive);
 
   return (
@@ -24,6 +30,8 @@ export function ProjectExplorer() {
           isActive={p.path === activePath}
           hasMarkers={!!hasMarkers[p.path]}
           hasProjectConfig={!!hasProjectConfig[p.path]}
+          cases={cases[p.path] ?? EMPTY_CASES}
+          config={projectConfigs[p.path] ?? null}
           onActivate={() => setActive(p.path)}
         />
       ))}
@@ -31,12 +39,16 @@ export function ProjectExplorer() {
   );
 }
 
+const EMPTY_CASES: CaseRecord[] = [];
+
 function ProjectNode({
   path,
   name,
   isActive,
   hasMarkers,
   hasProjectConfig,
+  cases,
+  config,
   onActivate,
 }: {
   path: string;
@@ -44,6 +56,8 @@ function ProjectNode({
   isActive: boolean;
   hasMarkers: boolean;
   hasProjectConfig: boolean;
+  cases: CaseRecord[];
+  config: ProjectConfigFile | null;
   onActivate: () => void;
 }) {
   const openTab = useWorkspaceStore((s) => s.openTab);
@@ -69,7 +83,8 @@ function ProjectNode({
   }, [configOpen]);
 
   const activeClasses = isActive ? 'bg-surface-raised' : 'bg-bg hover:bg-bg/80';
-  const cogVisibility = configOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100';
+  const iconVisibility = 'opacity-0 group-hover:opacity-100 focus:opacity-100';
+  const cogVisibility = configOpen ? 'opacity-100' : iconVisibility;
 
   const openMarkerConfigTab = () =>
     openTab({
@@ -87,6 +102,25 @@ function ProjectNode({
       kind: 'project-config',
       closable: true,
       projectPath: path,
+    });
+
+  const openNewCaseTab = () =>
+    openTab({
+      id: `new-case:${path}`,
+      title: 'New Case',
+      kind: 'new-case',
+      closable: true,
+      projectPath: path,
+    });
+
+  const openCaseTab = (record: CaseRecord) =>
+    openTab({
+      id: `case:${path}:${record.id}`,
+      title: record.caseId,
+      kind: 'case',
+      closable: true,
+      projectPath: path,
+      caseRecordId: record.id,
     });
 
   return (
@@ -111,6 +145,19 @@ function ProjectNode({
         >
           <Chevron size={14} className="shrink-0 text-text-muted" />
           <span className="truncate">{name}</span>
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onActivate();
+            openNewCaseTab();
+          }}
+          aria-label="Add Case"
+          title="Add Case"
+          className={`shrink-0 rounded-sm p-0.5 text-text-muted transition-opacity hover:text-text ${iconVisibility}`}
+        >
+          <UserPlus size={14} />
         </button>
         <div ref={configWrapperRef} className="relative">
           <button
@@ -143,19 +190,75 @@ function ProjectNode({
         </div>
       </div>
       {expanded && (
-        hasMarkers || hasProjectConfig ? (
-          <ConfigFolder
-            hasMarkers={hasMarkers}
-            hasProjectConfig={hasProjectConfig}
-            onOpenMarkers={openMarkerConfigTab}
-            onOpenProject={openProjectConfigTab}
-          />
+        hasMarkers || hasProjectConfig || cases.length > 0 ? (
+          <>
+            {(hasMarkers || hasProjectConfig) && (
+              <ConfigFolder
+                hasMarkers={hasMarkers}
+                hasProjectConfig={hasProjectConfig}
+                onOpenMarkers={openMarkerConfigTab}
+                onOpenProject={openProjectConfigTab}
+              />
+            )}
+            {cases.length > 0 && (
+              <CasesFolder cases={cases} config={config} onOpenCase={openCaseTab} />
+            )}
+          </>
         ) : (
           <div className="px-3 py-1 text-xs italic text-text-muted opacity-70">
             This project is empty!
           </div>
         )
       )}
+    </div>
+  );
+}
+
+function CasesFolder({
+  cases,
+  config,
+  onOpenCase,
+}: {
+  cases: CaseRecord[];
+  config: ProjectConfigFile | null;
+  onOpenCase: (record: CaseRecord) => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const Chevron = expanded ? ChevronDown : ChevronRight;
+  return (
+    <div className="flex flex-col">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex items-center gap-1 px-4 py-0.5 text-left text-sm text-text hover:bg-bg/80"
+        aria-expanded={expanded}
+      >
+        <Chevron size={12} className="shrink-0 text-text-muted" />
+        <span className="truncate">Cases</span>
+      </button>
+      {expanded &&
+        cases.map((c) => {
+          const incomplete = isCaseIncomplete(c, config);
+          return (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => onOpenCase(c)}
+              className="flex items-center gap-1.5 px-4 py-0.5 pl-9 text-left text-sm text-text hover:bg-bg/80"
+              title={incomplete ? `${c.caseId} (incomplete)` : c.caseId}
+            >
+              {incomplete && (
+                <span
+                  className="shrink-0 rounded-full bg-amber-400"
+                  style={{ width: 6, height: 6 }}
+                  aria-hidden
+                />
+              )}
+              <span className="truncate">{c.caseId}</span>
+              {incomplete && <span className="shrink-0 text-xs text-amber-400">incomplete</span>}
+            </button>
+          );
+        })}
     </div>
   );
 }
