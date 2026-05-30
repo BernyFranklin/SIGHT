@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type TabKind = 'welcome' | 'marker-config' | 'project-config';
+export type TabKind = 'welcome' | 'marker-config' | 'project-config' | 'new-case' | 'case';
 
 export interface Tab {
   id: string;
@@ -8,6 +8,8 @@ export interface Tab {
   kind: TabKind;
   closable: boolean;
   projectPath?: string;
+  /** For 'case' tabs: the CaseRecord.id this tab displays. */
+  caseRecordId?: string;
 }
 
 interface WorkspaceState {
