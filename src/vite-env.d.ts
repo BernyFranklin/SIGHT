@@ -1,6 +1,11 @@
 /// <reference types="vite/client" />
 
-import type { MarkersApi, ProjectApi, WindowControlsApi } from '@electron/preload';
+import type {
+  MarkersApi,
+  ProjectApi,
+  ProjectConfigApi,
+  WindowControlsApi,
+} from '@electron/preload';
 
 declare global {
   interface Window {
@@ -8,6 +13,7 @@ declare global {
       windowControls: WindowControlsApi;
       project: ProjectApi;
       markers: MarkersApi;
+      projectConfig: ProjectConfigApi;
     };
   }
 }

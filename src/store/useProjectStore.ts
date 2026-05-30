@@ -2,8 +2,21 @@ import { create } from 'zustand';
 
 import { markersApi } from '@app/api/markers';
 import { type Project, projectApi } from '@app/api/project';
-import { projectConfigApi } from '@app/api/projectConfig';
+import { type ProjectConfigFile, projectConfigApi } from '@app/api/projectConfig';
 import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
+
+/**
+ * A research subject within a project. Held in memory only (no disk persistence):
+ * the raw gaze file is a live `File` reference and `demographics` is a schema-keyed
+ * value map. Missing/null entries are what flag a case as "incomplete" when the
+ * project's demographic schema gains fields after the case was created.
+ */
+export interface CaseRecord {
+  id: string;
+  caseId: string;
+  file: File;
+  demographics: Record<string, string | number | null>;
+}
 
 interface ProjectState {
   open: Project[];
@@ -11,12 +24,15 @@ interface ProjectState {
   recents: Project[];
   hasMarkers: Record<string, boolean>;
   hasProjectConfig: Record<string, boolean>;
+  projectConfigs: Record<string, ProjectConfigFile | null>;
+  cases: Record<string, CaseRecord[]>;
   loadRecents: () => Promise<void>;
   createProject: () => Promise<void>;
   openProject: () => Promise<void>;
   openRecent: (path: string) => Promise<void>;
   refreshMarkers: (path: string) => Promise<void>;
   refreshProjectConfig: (path: string) => Promise<void>;
+  addCase: (path: string, record: CaseRecord) => void;
   setActive: (path: string) => void;
   closeActive: () => void;
 }
@@ -32,6 +48,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
   recents: [],
   hasMarkers: {},
   hasProjectConfig: {},
+  projectConfigs: {},
+  cases: {},
 
   loadRecents: async () => {
     const recents = await projectApi.listRecent();
@@ -42,16 +60,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const project = await projectApi.create();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    const [hasM, hasPc] = await Promise.all([
+    const [hasM, config] = await Promise.all([
       markersApi.has(project.path),
-      projectConfigApi.has(project.path),
+      projectConfigApi.read(project.path),
     ]);
     set((s) => ({
       open: addOpen(s.open, project),
       activePath: project.path,
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
-      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: hasPc },
+      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      projectConfigs: { ...s.projectConfigs, [project.path]: config },
     }));
   },
 
@@ -59,16 +78,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const project = await projectApi.open();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    const [hasM, hasPc] = await Promise.all([
+    const [hasM, config] = await Promise.all([
       markersApi.has(project.path),
-      projectConfigApi.has(project.path),
+      projectConfigApi.read(project.path),
     ]);
     set((s) => ({
       open: addOpen(s.open, project),
       activePath: project.path,
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
-      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: hasPc },
+      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      projectConfigs: { ...s.projectConfigs, [project.path]: config },
     }));
   },
 
@@ -79,16 +99,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
       set({ recents });
       return;
     }
-    const [hasM, hasPc] = await Promise.all([
+    const [hasM, config] = await Promise.all([
       markersApi.has(project.path),
-      projectConfigApi.has(project.path),
+      projectConfigApi.read(project.path),
     ]);
     set((s) => ({
       open: addOpen(s.open, project),
       activePath: project.path,
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
-      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: hasPc },
+      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      projectConfigs: { ...s.projectConfigs, [project.path]: config },
     }));
   },
 
@@ -98,9 +119,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
   },
 
   refreshProjectConfig: async (path) => {
-    const has = await projectConfigApi.has(path);
-    set((s) => ({ hasProjectConfig: { ...s.hasProjectConfig, [path]: has } }));
+    const config = await projectConfigApi.read(path);
+    set((s) => ({
+      hasProjectConfig: { ...s.hasProjectConfig, [path]: config != null },
+      projectConfigs: { ...s.projectConfigs, [path]: config },
+    }));
   },
+
+  addCase: (path, record) =>
+    set((s) => ({
+      cases: { ...s.cases, [path]: [...(s.cases[path] ?? []), record] },
+    })),
 
   setActive: (path) => set({ activePath: path }),
 
@@ -110,7 +139,11 @@ export const useProjectStore = create<ProjectState>((set) => ({
     set((s) => {
       const open = s.open.filter((p) => p.path !== closedPath);
       const activePath = open.length ? open[open.length - 1].path : null;
-      return { open, activePath };
+      const cases = { ...s.cases };
+      delete cases[closedPath];
+      const projectConfigs = { ...s.projectConfigs };
+      delete projectConfigs[closedPath];
+      return { open, activePath, cases, projectConfigs };
     });
     const workspace = useWorkspaceStore.getState();
     workspace.tabs
