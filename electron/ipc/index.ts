@@ -16,6 +16,10 @@ export const IpcChannels = {
   projectConfigRead: 'project-config:read',
   projectConfigWrite: 'project-config:write',
   projectConfigHas: 'project-config:has',
+  casesRead: 'cases:read',
+  casesWrite: 'cases:write',
+  casesHas: 'cases:has',
+  casesWriteGaze: 'cases:write-gaze',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

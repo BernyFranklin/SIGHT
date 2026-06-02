@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 
 import type {
+  CasesApi,
   MarkersApi,
   ProjectApi,
   ProjectConfigApi,
@@ -14,6 +15,7 @@ declare global {
       project: ProjectApi;
       markers: MarkersApi;
       projectConfig: ProjectConfigApi;
+      cases: CasesApi;
     };
   }
 }

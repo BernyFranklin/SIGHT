@@ -83,6 +83,18 @@ export interface ProjectConfigFile {
   demographics_custom_attributes: CustomAttribute[];
 }
 
+export interface PersistedCase {
+  id: string;
+  caseId: string;
+  fileName: string;
+  fileSize: number;
+  demographics: Record<string, string | number | null>;
+}
+
+export interface CasesFile {
+  cases: PersistedCase[];
+}
+
 const windowControls = {
   minimize: () => ipcRenderer.invoke(IpcChannels.windowMinimize),
   toggleMaximize: () => ipcRenderer.invoke(IpcChannels.windowToggleMaximize),
@@ -126,9 +138,21 @@ const projectConfig = {
     ipcRenderer.invoke(IpcChannels.projectConfigHas, projectPath),
 };
 
-contextBridge.exposeInMainWorld('api', { windowControls, project, markers, projectConfig });
+const cases = {
+  read: (projectPath: string): Promise<CasesFile | null> =>
+    ipcRenderer.invoke(IpcChannels.casesRead, projectPath),
+  write: (projectPath: string, data: CasesFile): Promise<void> =>
+    ipcRenderer.invoke(IpcChannels.casesWrite, projectPath, data),
+  has: (projectPath: string): Promise<boolean> =>
+    ipcRenderer.invoke(IpcChannels.casesHas, projectPath),
+  writeGaze: (projectPath: string, id: string, bytes: ArrayBuffer): Promise<void> =>
+    ipcRenderer.invoke(IpcChannels.casesWriteGaze, projectPath, id, bytes),
+};
+
+contextBridge.exposeInMainWorld('api', { windowControls, project, markers, projectConfig, cases });
 
 export type WindowControlsApi = typeof windowControls;
 export type ProjectApi = typeof project;
 export type MarkersApi = typeof markers;
 export type ProjectConfigApi = typeof projectConfig;
+export type CasesApi = typeof cases;

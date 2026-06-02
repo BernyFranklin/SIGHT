@@ -4,6 +4,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
 import { IpcChannels } from '../ipc';
+import { registerCasesIpc } from '../ipc/cases';
 import { registerMarkersIpc } from '../ipc/markers';
 import { registerProjectIpc } from '../ipc/project';
 import { registerProjectConfigIpc } from '../ipc/projectConfig';
@@ -62,6 +63,7 @@ ipcMain.handle(IpcChannels.windowToggleDevTools, (event) => {
 registerProjectIpc(ipcMain);
 registerMarkersIpc(ipcMain);
 registerProjectConfigIpc(ipcMain);
+registerCasesIpc(ipcMain);
 
 app.on('ready', createWindow);
 
