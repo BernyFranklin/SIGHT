@@ -106,8 +106,8 @@ export function CaseTab({ tab }: { tab: Tab }) {
             </FieldRow>
             <FieldRow label="Gaze Data File">
               <div className="flex flex-col text-sm">
-                <span className="text-text">{record.file.name}</span>
-                <span className="text-xs text-text-muted">{formatSize(record.file.size)}</span>
+                <span className="text-text">{record.fileName}</span>
+                <span className="text-xs text-text-muted">{formatSize(record.fileSize)}</span>
               </div>
             </FieldRow>
           </Group>

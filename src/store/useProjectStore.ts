@@ -1,20 +1,23 @@
 import { create } from 'zustand';
 
+import { casesApi } from '@app/api/cases';
 import { markersApi } from '@app/api/markers';
 import { type Project, projectApi } from '@app/api/project';
 import { type ProjectConfigFile, projectConfigApi } from '@app/api/projectConfig';
 import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
 
 /**
- * A research subject within a project. Held in memory only (no disk persistence):
- * the raw gaze file is a live `File` reference and `demographics` is a schema-keyed
- * value map. Missing/null entries are what flag a case as "incomplete" when the
- * project's demographic schema gains fields after the case was created.
+ * A research subject within a project, loaded from `.sight/cases.json`. The raw gaze
+ * file is copied into the project at `.sight/cases/<id>.csv`; here we keep only its
+ * `fileName`/`fileSize` for display. `demographics` is a schema-keyed value map whose
+ * missing/null entries flag a case as "incomplete" when the project's demographic
+ * schema gains fields after the case was created.
  */
 export interface CaseRecord {
   id: string;
   caseId: string;
-  file: File;
+  fileName: string;
+  fileSize: number;
   demographics: Record<string, string | number | null>;
 }
 
@@ -24,6 +27,7 @@ interface ProjectState {
   recents: Project[];
   hasMarkers: Record<string, boolean>;
   hasProjectConfig: Record<string, boolean>;
+  hasCases: Record<string, boolean>;
   projectConfigs: Record<string, ProjectConfigFile | null>;
   cases: Record<string, CaseRecord[]>;
   loadRecents: () => Promise<void>;
@@ -32,7 +36,7 @@ interface ProjectState {
   openRecent: (path: string) => Promise<void>;
   refreshMarkers: (path: string) => Promise<void>;
   refreshProjectConfig: (path: string) => Promise<void>;
-  addCase: (path: string, record: CaseRecord) => void;
+  refreshCases: (path: string) => Promise<void>;
   setActive: (path: string) => void;
   closeActive: () => void;
 }
@@ -48,6 +52,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   recents: [],
   hasMarkers: {},
   hasProjectConfig: {},
+  hasCases: {},
   projectConfigs: {},
   cases: {},
 
@@ -60,9 +65,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const project = await projectApi.create();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    const [hasM, config] = await Promise.all([
+    const [hasM, config, casesFile] = await Promise.all([
       markersApi.has(project.path),
       projectConfigApi.read(project.path),
+      casesApi.read(project.path),
     ]);
     set((s) => ({
       open: addOpen(s.open, project),
@@ -70,7 +76,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
       hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      hasCases: { ...s.hasCases, [project.path]: casesFile != null },
       projectConfigs: { ...s.projectConfigs, [project.path]: config },
+      cases: { ...s.cases, [project.path]: casesFile?.cases ?? [] },
     }));
   },
 
@@ -78,9 +86,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const project = await projectApi.open();
     if (!project) return;
     const recents = await projectApi.listRecent();
-    const [hasM, config] = await Promise.all([
+    const [hasM, config, casesFile] = await Promise.all([
       markersApi.has(project.path),
       projectConfigApi.read(project.path),
+      casesApi.read(project.path),
     ]);
     set((s) => ({
       open: addOpen(s.open, project),
@@ -88,7 +97,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
       hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      hasCases: { ...s.hasCases, [project.path]: casesFile != null },
       projectConfigs: { ...s.projectConfigs, [project.path]: config },
+      cases: { ...s.cases, [project.path]: casesFile?.cases ?? [] },
     }));
   },
 
@@ -99,9 +110,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
       set({ recents });
       return;
     }
-    const [hasM, config] = await Promise.all([
+    const [hasM, config, casesFile] = await Promise.all([
       markersApi.has(project.path),
       projectConfigApi.read(project.path),
+      casesApi.read(project.path),
     ]);
     set((s) => ({
       open: addOpen(s.open, project),
@@ -109,7 +121,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
       hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      hasCases: { ...s.hasCases, [project.path]: casesFile != null },
       projectConfigs: { ...s.projectConfigs, [project.path]: config },
+      cases: { ...s.cases, [project.path]: casesFile?.cases ?? [] },
     }));
   },
 
@@ -126,10 +140,13 @@ export const useProjectStore = create<ProjectState>((set) => ({
     }));
   },
 
-  addCase: (path, record) =>
+  refreshCases: async (path) => {
+    const casesFile = await casesApi.read(path);
     set((s) => ({
-      cases: { ...s.cases, [path]: [...(s.cases[path] ?? []), record] },
-    })),
+      hasCases: { ...s.hasCases, [path]: casesFile != null },
+      cases: { ...s.cases, [path]: casesFile?.cases ?? [] },
+    }));
+  },
 
   setActive: (path) => set({ activePath: path }),
 
@@ -141,9 +158,11 @@ export const useProjectStore = create<ProjectState>((set) => ({
       const activePath = open.length ? open[open.length - 1].path : null;
       const cases = { ...s.cases };
       delete cases[closedPath];
+      const hasCases = { ...s.hasCases };
+      delete hasCases[closedPath];
       const projectConfigs = { ...s.projectConfigs };
       delete projectConfigs[closedPath];
-      return { open, activePath, cases, projectConfigs };
+      return { open, activePath, cases, hasCases, projectConfigs };
     });
     const workspace = useWorkspaceStore.getState();
     workspace.tabs

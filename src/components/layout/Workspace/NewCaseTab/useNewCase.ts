@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { casesApi } from '@app/api/cases';
 import { type CaseRecord, useProjectStore } from '@app/store/useProjectStore';
 import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
 
@@ -36,7 +37,7 @@ function collectDemographics(
 export function useNewCase(projectPath: string, tabId: string) {
   const config = useProjectStore((s) => s.projectConfigs[projectPath] ?? null);
   const projectCases = useProjectStore((s) => s.cases[projectPath]);
-  const addCase = useProjectStore((s) => s.addCase);
+  const refreshCases = useProjectStore((s) => s.refreshCases);
   const closeTab = useWorkspaceStore((s) => s.closeTab);
 
   const fields = useMemo(() => deriveCaseFields(config), [config]);
@@ -46,6 +47,7 @@ export function useNewCase(projectPath: string, tabId: string) {
   const [demographics, setDemographics] = useState<Record<string, string | number | null>>({});
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const existingCaseIds = useMemo(
     () => (projectCases ?? []).map((c) => c.caseId),
@@ -71,17 +73,28 @@ export function useNewCase(projectPath: string, tabId: string) {
 
   const handleCancel = () => closeTab(tabId);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitAttempted(true);
-    if (!canSubmit || hasErrors || !file) return;
+    if (!canSubmit || hasErrors || !file || saving) return;
     const record: CaseRecord = {
       id: newCaseId(),
       caseId: caseId.trim(),
-      file,
+      fileName: file.name,
+      fileSize: file.size,
       demographics: collectDemographics(fields, demographics),
     };
-    addCase(projectPath, record);
-    closeTab(tabId);
+    setSaving(true);
+    try {
+      const bytes = await file.arrayBuffer();
+      await casesApi.writeGaze(projectPath, record.id, bytes);
+      const existing = useProjectStore.getState().cases[projectPath] ?? [];
+      await casesApi.write(projectPath, { cases: [...existing, record] });
+      await refreshCases(projectPath);
+      closeTab(tabId);
+    } catch (err) {
+      console.error('[useNewCase] failed to save case', err);
+      setSaving(false);
+    }
   };
 
   return {
@@ -98,6 +111,7 @@ export function useNewCase(projectPath: string, tabId: string) {
     showError,
     markTouched,
     canSubmit,
+    saving,
     handleSubmit,
     handleCancel,
   };

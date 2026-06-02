@@ -29,6 +29,7 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
     showError,
     markTouched,
     canSubmit,
+    saving,
     handleSubmit,
     handleCancel,
   } = useNewCase(projectPath, tab.id);
@@ -208,10 +209,10 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit}
+          disabled={!canSubmit || saving}
           className="rounded-sm bg-surface px-3 py-1 text-sm text-text transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Add Case
+          {saving ? 'Adding...' : 'Add Case'}
         </button>
         <button
           type="button"
