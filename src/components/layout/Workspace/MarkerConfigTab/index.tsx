@@ -1,8 +1,8 @@
 import { Info } from 'lucide-react';
 
+import { ConfirmDialog } from '@app/components/common/ConfirmDialog';
 import type { Tab } from '@app/store/useWorkspaceStore';
 
-import { ConfirmDialog } from './components/ConfirmDialog';
 import { EventField } from './components/EventField';
 import { Field } from './components/Field';
 import { StatusBar } from './components/StatusBar';

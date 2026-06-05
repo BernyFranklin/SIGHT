@@ -11,6 +11,8 @@ export interface CaseValidationInput {
   fields: CaseField[];
   /** Existing case identifiers in this project, for uniqueness. */
   existingCaseIds: string[];
+  /** Whether a gaze file must be present (create) or is optional (edit). Defaults to true. */
+  requireFile?: boolean;
 }
 
 export interface CaseValidationResult {
@@ -25,7 +27,7 @@ function isBlank(value: string | number | null | undefined): boolean {
 }
 
 export function validateCase(input: CaseValidationInput): CaseValidationResult {
-  const { caseId, file, demographics, fields, existingCaseIds } = input;
+  const { caseId, file, demographics, fields, existingCaseIds, requireFile = true } = input;
   const result: CaseValidationResult = { fieldErrors: {} };
 
   // Case identifier
@@ -42,7 +44,7 @@ export function validateCase(input: CaseValidationInput): CaseValidationResult {
 
   // Gaze data file
   if (!file) {
-    result.fileError = 'A gaze data file is required.';
+    if (requireFile) result.fileError = 'A gaze data file is required.';
   } else if (!file.name.toLowerCase().endsWith('.csv')) {
     result.fileError = 'Only .csv files are accepted.';
   }

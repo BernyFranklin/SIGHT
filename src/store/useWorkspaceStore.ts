@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 
-export type TabKind = 'welcome' | 'marker-config' | 'project-config' | 'new-case' | 'case';
+export type TabKind =
+  | 'welcome'
+  | 'marker-config'
+  | 'project-config'
+  | 'new-case'
+  | 'edit-case'
+  | 'case';
 
 export interface Tab {
   id: string;
@@ -8,7 +14,7 @@ export interface Tab {
   kind: TabKind;
   closable: boolean;
   projectPath?: string;
-  /** For 'case' tabs: the CaseRecord.id this tab displays. */
+  /** For 'case' and 'edit-case' tabs: the CaseRecord.id this tab targets. */
   caseRecordId?: string;
 }
 

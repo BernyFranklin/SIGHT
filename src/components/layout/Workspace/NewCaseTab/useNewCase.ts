@@ -34,35 +34,55 @@ function collectDemographics(
   return out;
 }
 
-export function useNewCase(projectPath: string, tabId: string) {
+export function useNewCase(projectPath: string, tabId: string, editRecordId?: string) {
   const config = useProjectStore((s) => s.projectConfigs[projectPath] ?? null);
   const projectCases = useProjectStore((s) => s.cases[projectPath]);
   const refreshCases = useProjectStore((s) => s.refreshCases);
   const closeTab = useWorkspaceStore((s) => s.closeTab);
 
+  const editRecord = useMemo(
+    () =>
+      editRecordId ? (projectCases ?? []).find((c) => c.id === editRecordId) : undefined,
+    // Resolve the record once on mount; subsequent edits live in local state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const mode: 'create' | 'edit' = editRecordId ? 'edit' : 'create';
+
   const fields = useMemo(() => deriveCaseFields(config), [config]);
 
-  const [caseId, setCaseId] = useState('');
+  const [caseId, setCaseId] = useState(() => editRecord?.caseId ?? '');
   const [file, setFile] = useState<File | null>(null);
-  const [demographics, setDemographics] = useState<Record<string, string | number | null>>({});
+  const [demographics, setDemographics] = useState<Record<string, string | number | null>>(
+    () => ({ ...(editRecord?.demographics ?? {}) }),
+  );
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const existingCaseIds = useMemo(
-    () => (projectCases ?? []).map((c) => c.caseId),
-    [projectCases],
+    () => (projectCases ?? []).filter((c) => c.id !== editRecordId).map((c) => c.caseId),
+    [projectCases, editRecordId],
   );
 
   const { caseIdError, fileError, fieldErrors } = useMemo(
-    () => validateCase({ caseId, file, demographics, fields, existingCaseIds }),
-    [caseId, file, demographics, fields, existingCaseIds],
+    () =>
+      validateCase({
+        caseId,
+        file,
+        demographics,
+        fields,
+        existingCaseIds,
+        requireFile: mode === 'create',
+      }),
+    [caseId, file, demographics, fields, existingCaseIds, mode],
   );
 
   const hasErrors =
     Boolean(caseIdError) || Boolean(fileError) || Object.keys(fieldErrors).length > 0;
-  // Button gating per spec: file attached + case ID filled. Full validation runs on submit.
-  const canSubmit = Boolean(file) && caseId.trim().length > 0;
+  // Button gating per spec: case ID filled, plus a file when creating. Full validation runs on submit.
+  const canSubmit =
+    caseId.trim().length > 0 && (mode === 'edit' || Boolean(file));
 
   const showError = (key: string) => submitAttempted || touched.has(key);
   const markTouched = (key: string) =>
@@ -75,20 +95,30 @@ export function useNewCase(projectPath: string, tabId: string) {
 
   const handleSubmit = async () => {
     setSubmitAttempted(true);
-    if (!canSubmit || hasErrors || !file || saving) return;
+    if (!canSubmit || hasErrors || saving) return;
+    if (mode === 'create' && !file) return;
+
+    const baseId = editRecord?.id ?? newCaseId();
     const record: CaseRecord = {
-      id: newCaseId(),
+      id: baseId,
       caseId: caseId.trim(),
-      fileName: file.name,
-      fileSize: file.size,
+      fileName: file ? file.name : (editRecord?.fileName ?? ''),
+      fileSize: file ? file.size : (editRecord?.fileSize ?? 0),
       demographics: collectDemographics(fields, demographics),
     };
+
     setSaving(true);
     try {
-      const bytes = await file.arrayBuffer();
-      await casesApi.writeGaze(projectPath, record.id, bytes);
+      if (file) {
+        const bytes = await file.arrayBuffer();
+        await casesApi.writeGaze(projectPath, record.id, bytes);
+      }
       const existing = useProjectStore.getState().cases[projectPath] ?? [];
-      await casesApi.write(projectPath, { cases: [...existing, record] });
+      const nextCases =
+        mode === 'edit'
+          ? existing.map((c) => (c.id === record.id ? record : c))
+          : [...existing, record];
+      await casesApi.write(projectPath, { cases: nextCases });
       await refreshCases(projectPath);
       closeTab(tabId);
     } catch (err) {
@@ -98,6 +128,9 @@ export function useNewCase(projectPath: string, tabId: string) {
   };
 
   return {
+    mode,
+    existingFileName: editRecord?.fileName ?? null,
+    existingFileSize: editRecord?.fileSize ?? null,
     fields,
     caseId,
     setCaseId,

@@ -15,7 +15,11 @@ import { CASE_ID_MAX, CUSTOM_TEXT_MAX } from './validation';
 
 export function NewCaseTab({ tab }: { tab: Tab }) {
   const projectPath = tab.projectPath ?? '';
+  const editRecordId = tab.kind === 'edit-case' ? tab.caseRecordId : undefined;
   const {
+    mode,
+    existingFileName,
+    existingFileSize,
     fields,
     caseId,
     setCaseId,
@@ -32,7 +36,7 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
     saving,
     handleSubmit,
     handleCancel,
-  } = useNewCase(projectPath, tab.id);
+  } = useNewCase(projectPath, tab.id, editRecordId);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -204,7 +208,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
     <div className="flex h-full w-full flex-col overflow-hidden">
       <div className="flex shrink-0 items-center gap-3 border-b border-border bg-neutral-700 px-4 py-2">
         <span className="flex-1 text-sm text-white">
-          Attach the gaze data file and fill in the required fields to add a case.
+          {mode === 'edit'
+            ? 'Update the case details. Choose a new gaze data file only if you want to replace the existing one.'
+            : 'Attach the gaze data file and fill in the required fields to add a case.'}
         </span>
         <button
           type="button"
@@ -212,7 +218,13 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
           disabled={!canSubmit || saving}
           className="rounded-sm bg-surface px-3 py-1 text-sm text-text transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? 'Adding...' : 'Add Case'}
+          {mode === 'edit'
+            ? saving
+              ? 'Saving...'
+              : 'Save Changes'
+            : saving
+              ? 'Adding...'
+              : 'Add Case'}
         </button>
         <button
           type="button"
@@ -243,14 +255,25 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
               />
             </FieldRow>
             <FieldRow label="Gaze Data File">
-              <FileUploadZone
-                file={file}
-                onChange={(f) => {
-                  setFile(f);
-                  markTouched('file');
-                }}
-                error={showError('file') ? fileError : undefined}
-              />
+              <div className="flex flex-col gap-1.5">
+                {mode === 'edit' && !file && existingFileName && (
+                  <div className="flex flex-col rounded-sm border border-border bg-bg px-3 py-2 text-sm">
+                    <span className="text-text">{existingFileName}</span>
+                    <span className="text-xs text-text-muted">
+                      {existingFileSize != null ? formatSize(existingFileSize) : ''} · current file —
+                      choose a file below to replace it.
+                    </span>
+                  </div>
+                )}
+                <FileUploadZone
+                  file={file}
+                  onChange={(f) => {
+                    setFile(f);
+                    markTouched('file');
+                  }}
+                  error={showError('file') ? fileError : undefined}
+                />
+              </div>
             </FieldRow>
           </Group>
 
@@ -265,6 +288,12 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
 
 function asNumber(value: string | number | null | undefined): number | null {
   return typeof value === 'number' ? value : null;
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function errorMessage(text: string | undefined): { text: string; tone: 'error' } | undefined {

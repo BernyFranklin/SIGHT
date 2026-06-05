@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export interface PersistedCase {
@@ -56,4 +56,13 @@ export async function writeGazeFile(
   const dir = path.join(projectPath, SIGHT_DIR, CASES_DIR);
   await mkdir(dir, { recursive: true });
   await writeFile(gazeFilePath(projectPath, id), Buffer.from(bytes));
+}
+
+/** Remove a case from the manifest and delete its gaze file. */
+export async function deleteCase(projectPath: string, id: string): Promise<void> {
+  const data = await readCases(projectPath);
+  if (data) {
+    await writeCases(projectPath, { cases: data.cases.filter((c) => c.id !== id) });
+  }
+  await rm(gazeFilePath(projectPath, id), { force: true });
 }

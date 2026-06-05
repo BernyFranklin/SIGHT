@@ -15,5 +15,6 @@ export const tabRegistry: Record<TabKind, ComponentType<TabComponentProps>> = {
   'marker-config': MarkerConfigTab,
   'project-config': ProjectConfigTab,
   'new-case': NewCaseTab,
+  'edit-case': NewCaseTab,
   case: CaseTab,
 };

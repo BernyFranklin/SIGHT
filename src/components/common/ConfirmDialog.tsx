@@ -2,16 +2,18 @@ export function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
+  confirmLabel = 'Remove',
 }: {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  confirmLabel?: string;
 }) {
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className="absolute inset-0 z-50 grid place-items-center bg-black/50"
+      className="fixed inset-0 z-50 grid place-items-center bg-black/50"
       onClick={onCancel}
     >
       <div
@@ -33,7 +35,7 @@ export function ConfirmDialog({
             autoFocus
             className="rounded-sm bg-red-700 px-3 py-1 text-sm text-white transition-colors hover:bg-red-600"
           >
-            Remove
+            {confirmLabel}
           </button>
         </div>
       </div>

@@ -20,6 +20,7 @@ export const IpcChannels = {
   casesWrite: 'cases:write',
   casesHas: 'cases:has',
   casesWriteGaze: 'cases:write-gaze',
+  casesDelete: 'cases:delete',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

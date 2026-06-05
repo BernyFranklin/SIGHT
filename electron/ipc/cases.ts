@@ -2,6 +2,7 @@ import type { IpcMain } from 'electron';
 
 import {
   type CasesFile,
+  deleteCase,
   hasCases,
   readCases,
   writeCases,
@@ -25,5 +26,8 @@ export function registerCasesIpc(ipcMain: IpcMain): void {
     IpcChannels.casesWriteGaze,
     (_event, projectPath: string, id: string, bytes: ArrayBuffer) =>
       writeGazeFile(projectPath, id, bytes),
+  );
+  ipcMain.handle(IpcChannels.casesDelete, (_event, projectPath: string, id: string) =>
+    deleteCase(projectPath, id),
   );
 }

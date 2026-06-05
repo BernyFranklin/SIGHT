@@ -1,7 +1,9 @@
-import { ChevronDown, ChevronRight, Settings, UserPlus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Settings, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { casesApi } from '@app/api/cases';
 import type { ProjectConfigFile } from '@app/api/projectConfig';
+import { ConfirmDialog } from '@app/components/common/ConfirmDialog';
 import { type CaseRecord, useProjectStore } from '@app/store/useProjectStore';
 import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
 
@@ -61,6 +63,8 @@ function ProjectNode({
   onActivate: () => void;
 }) {
   const openTab = useWorkspaceStore((s) => s.openTab);
+  const closeTab = useWorkspaceStore((s) => s.closeTab);
+  const refreshCases = useProjectStore((s) => s.refreshCases);
   const [expanded, setExpanded] = useState(true);
   const [configOpen, setConfigOpen] = useState(false);
   const configWrapperRef = useRef<HTMLDivElement>(null);
@@ -122,6 +126,27 @@ function ProjectNode({
       projectPath: path,
       caseRecordId: record.id,
     });
+
+  const openEditCaseTab = (record: CaseRecord) =>
+    openTab({
+      id: `edit-case:${path}:${record.id}`,
+      title: `Edit: ${record.caseId}`,
+      kind: 'edit-case',
+      closable: true,
+      projectPath: path,
+      caseRecordId: record.id,
+    });
+
+  const deleteCase = async (record: CaseRecord) => {
+    try {
+      await casesApi.delete(path, record.id);
+      await refreshCases(path);
+      closeTab(`case:${path}:${record.id}`);
+      closeTab(`edit-case:${path}:${record.id}`);
+    } catch (err) {
+      console.error('[ProjectExplorer] failed to delete case', err);
+    }
+  };
 
   return (
     <div className="flex flex-col">
@@ -201,7 +226,13 @@ function ProjectNode({
               />
             )}
             {cases.length > 0 && (
-              <CasesFolder cases={cases} config={config} onOpenCase={openCaseTab} />
+              <CasesFolder
+                cases={cases}
+                config={config}
+                onOpenCase={openCaseTab}
+                onEditCase={openEditCaseTab}
+                onDeleteCase={deleteCase}
+              />
             )}
           </>
         ) : (
@@ -218,12 +249,18 @@ function CasesFolder({
   cases,
   config,
   onOpenCase,
+  onEditCase,
+  onDeleteCase,
 }: {
   cases: CaseRecord[];
   config: ProjectConfigFile | null;
   onOpenCase: (record: CaseRecord) => void;
+  onEditCase: (record: CaseRecord) => void;
+  onDeleteCase: (record: CaseRecord) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
+  const [menu, setMenu] = useState<{ record: CaseRecord; x: number; y: number } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<CaseRecord | null>(null);
   const Chevron = expanded ? ChevronDown : ChevronRight;
   return (
     <div className="flex flex-col">
@@ -244,6 +281,10 @@ function CasesFolder({
               key={c.id}
               type="button"
               onClick={() => onOpenCase(c)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setMenu({ record: c, x: e.clientX, y: e.clientY });
+              }}
               className="flex items-center gap-1.5 px-4 py-0.5 pl-9 text-left text-sm text-text hover:bg-bg/80"
               title={incomplete ? `${c.caseId} (incomplete)` : c.caseId}
             >
@@ -259,6 +300,90 @@ function CasesFolder({
             </button>
           );
         })}
+      {menu && (
+        <CaseContextMenu
+          x={menu.x}
+          y={menu.y}
+          onEdit={() => {
+            onEditCase(menu.record);
+            setMenu(null);
+          }}
+          onDelete={() => {
+            setPendingDelete(menu.record);
+            setMenu(null);
+          }}
+          onClose={() => setMenu(null)}
+        />
+      )}
+      {pendingDelete && (
+        <ConfirmDialog
+          message={`Delete case "${pendingDelete.caseId}"? Its gaze data file will be permanently removed. This cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            onDeleteCase(pendingDelete);
+            setPendingDelete(null);
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function CaseContextMenu({
+  x,
+  y,
+  onEdit,
+  onDelete,
+  onClose,
+}: {
+  x: number;
+  y: number;
+  onEdit: () => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) onClose();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      ref={ref}
+      role="menu"
+      style={{ top: y, left: x }}
+      className="fixed z-50 min-w-40 overflow-hidden rounded-md border border-border bg-surface-raised py-1 shadow-overlay"
+    >
+      <button
+        type="button"
+        role="menuitem"
+        onClick={onEdit}
+        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-text transition-colors hover:bg-surface"
+      >
+        <Pencil size={14} className="shrink-0 text-text-muted" />
+        Edit
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        onClick={onDelete}
+        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-red-400 transition-colors hover:bg-surface"
+      >
+        <Trash2 size={14} className="shrink-0" />
+        Delete
+      </button>
     </div>
   );
 }

@@ -147,6 +147,8 @@ const cases = {
     ipcRenderer.invoke(IpcChannels.casesHas, projectPath),
   writeGaze: (projectPath: string, id: string, bytes: ArrayBuffer): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.casesWriteGaze, projectPath, id, bytes),
+  delete: (projectPath: string, id: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannels.casesDelete, projectPath, id),
 };
 
 contextBridge.exposeInMainWorld('api', { windowControls, project, markers, projectConfig, cases });
