@@ -20,7 +20,8 @@
       "@shared/*": ["./shared/*"],
       "@saccades/*": ["./saccades/*"],
       "@pupil/*": ["./pupil/*"],
-      "@viz/*": ["./viz/*"]
+      "@viz/*": ["./viz/*"],
+      "@cleaning/*": ["./cleaning/*"]
     }
   },
   "include": [
@@ -30,6 +31,7 @@
     "saccades/**/*",
     "pupil/**/*",
     "viz/**/*",
+    "cleaning/**/*",
     "forge.env.d.ts"
   ]
 }

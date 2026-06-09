@@ -90,3 +90,7 @@ typings/
 
 # Electron-Forge
 out/
+
+# Gaze cleaning: demo outputs and full raw recordings (committed fixtures are slices only)
+cleaned/
+cleaning/fixtures/*.full.csv

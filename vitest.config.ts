@@ -15,6 +15,7 @@ export default defineConfig({
       'saccades/**/*.{test,spec}.ts',
       'pupil/**/*.{test,spec}.ts',
       'viz/**/*.{test,spec}.ts',
+      'cleaning/**/*.{test,spec}.ts',
     ],
   },
 });

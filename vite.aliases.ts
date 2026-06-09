@@ -9,4 +9,5 @@ export const aliases = {
   '@saccades': r('saccades'),
   '@pupil': r('pupil'),
   '@viz': r('viz'),
+  '@cleaning': r('cleaning'),
 } as const;
