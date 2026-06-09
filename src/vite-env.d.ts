@@ -2,6 +2,7 @@
 
 import type {
   CasesApi,
+  CleaningApi,
   MarkersApi,
   ProjectApi,
   ProjectConfigApi,
@@ -16,6 +17,7 @@ declare global {
       markers: MarkersApi;
       projectConfig: ProjectConfigApi;
       cases: CasesApi;
+      cleaning: CleaningApi;
     };
   }
 }

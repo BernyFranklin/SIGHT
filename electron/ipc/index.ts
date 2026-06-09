@@ -21,6 +21,9 @@ export const IpcChannels = {
   casesHas: 'cases:has',
   casesWriteGaze: 'cases:write-gaze',
   casesDelete: 'cases:delete',
+  cleaningRun: 'cleaning:run',
+  cleaningReadReport: 'cleaning:read-report',
+  cleaningHasReport: 'cleaning:has-report',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

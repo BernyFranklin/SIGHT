@@ -21,6 +21,7 @@
       "@saccades/*": ["./saccades/*"],
       "@pupil/*": ["./pupil/*"],
       "@viz/*": ["./viz/*"],
+      "@cleaning": ["./cleaning/index.ts"],
       "@cleaning/*": ["./cleaning/*"]
     }
   },

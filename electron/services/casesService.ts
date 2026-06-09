@@ -30,7 +30,9 @@ export function hasCases(projectPath: string): boolean {
   return existsSync(casesPath(projectPath));
 }
 
-export async function readCases(projectPath: string): Promise<CasesFile | null> {
+export async function readCases(
+  projectPath: string,
+): Promise<CasesFile | null> {
   const file = casesPath(projectPath);
   if (!existsSync(file)) return null;
   try {
@@ -42,10 +44,17 @@ export async function readCases(projectPath: string): Promise<CasesFile | null> 
   }
 }
 
-export async function writeCases(projectPath: string, data: CasesFile): Promise<void> {
+export async function writeCases(
+  projectPath: string,
+  data: CasesFile,
+): Promise<void> {
   const dir = path.join(projectPath, SIGHT_DIR);
   await mkdir(dir, { recursive: true });
-  await writeFile(casesPath(projectPath), JSON.stringify(data, null, 2), 'utf-8');
+  await writeFile(
+    casesPath(projectPath),
+    JSON.stringify(data, null, 2),
+    'utf-8',
+  );
 }
 
 export async function writeGazeFile(
@@ -59,10 +68,15 @@ export async function writeGazeFile(
 }
 
 /** Remove a case from the manifest and delete its gaze file. */
-export async function deleteCase(projectPath: string, id: string): Promise<void> {
+export async function deleteCase(
+  projectPath: string,
+  id: string,
+): Promise<void> {
   const data = await readCases(projectPath);
   if (data) {
-    await writeCases(projectPath, { cases: data.cases.filter((c) => c.id !== id) });
+    await writeCases(projectPath, {
+      cases: data.cases.filter((c) => c.id !== id),
+    });
   }
   await rm(gazeFilePath(projectPath, id), { force: true });
 }

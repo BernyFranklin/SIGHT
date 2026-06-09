@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+import type { CleaningConfigOverrides, QaReport } from '@cleaning';
+
 import { IpcChannels } from '../ipc';
 
 export interface Project {
@@ -145,16 +147,43 @@ const cases = {
     ipcRenderer.invoke(IpcChannels.casesWrite, projectPath, data),
   has: (projectPath: string): Promise<boolean> =>
     ipcRenderer.invoke(IpcChannels.casesHas, projectPath),
-  writeGaze: (projectPath: string, id: string, bytes: ArrayBuffer): Promise<void> =>
+  writeGaze: (
+    projectPath: string,
+    id: string,
+    bytes: ArrayBuffer,
+  ): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.casesWriteGaze, projectPath, id, bytes),
   delete: (projectPath: string, id: string): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.casesDelete, projectPath, id),
 };
 
-contextBridge.exposeInMainWorld('api', { windowControls, project, markers, projectConfig, cases });
+const cleaning = {
+  run: (
+    projectPath: string,
+    id: string,
+    overrides?: CleaningConfigOverrides,
+  ): Promise<QaReport> =>
+    ipcRenderer.invoke(IpcChannels.cleaningRun, projectPath, id, overrides),
+  readReport: (projectPath: string, id: string): Promise<QaReport | null> =>
+    ipcRenderer.invoke(IpcChannels.cleaningReadReport, projectPath, id),
+  hasReport: (projectPath: string, id: string): Promise<boolean> =>
+    ipcRenderer.invoke(IpcChannels.cleaningHasReport, projectPath, id),
+};
+
+contextBridge.exposeInMainWorld('api', {
+  windowControls,
+  project,
+  markers,
+  projectConfig,
+  cases,
+  cleaning,
+});
+
+export type { CleaningConfigOverrides, QaReport } from '@cleaning';
 
 export type WindowControlsApi = typeof windowControls;
 export type ProjectApi = typeof project;
 export type MarkersApi = typeof markers;
 export type ProjectConfigApi = typeof projectConfig;
 export type CasesApi = typeof cases;
+export type CleaningApi = typeof cleaning;

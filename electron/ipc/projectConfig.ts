@@ -15,7 +15,8 @@ export function registerProjectConfigIpc(ipcMain: IpcMain): void {
   );
   ipcMain.handle(
     IpcChannels.projectConfigWrite,
-    (_event, projectPath: string, data: ProjectConfigFile) => writeProjectConfig(projectPath, data),
+    (_event, projectPath: string, data: ProjectConfigFile) =>
+      writeProjectConfig(projectPath, data),
   );
   ipcMain.handle(IpcChannels.projectConfigHas, (_event, projectPath: string) =>
     hasProjectConfig(projectPath),
