@@ -31,3 +31,5 @@ export {
   cleanTable,
   type CleanResult,
 } from './pipeline/cleanRecording';
+export { writeOutputs, type WrittenOutputs } from './outputs/writeOutputs';
+export { runCli } from './cli';

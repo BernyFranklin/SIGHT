@@ -18,6 +18,7 @@ import { flagInvalidRuns } from '../core/invalidRuns';
 import { interpolatePupils } from '../core/interpolate';
 import { type Table } from '../frame';
 import { parseVarjoCsv, readVarjoCsv } from '../ingest/parseVarjoCsv';
+import { writeOutputs, type WrittenOutputs } from '../outputs/writeOutputs';
 import { buildReport, type QaReport } from '../qa/buildReport';
 import { buildViews } from '../views/buildViews';
 
@@ -28,6 +29,8 @@ export interface CleanResult {
   pupillometryView: Table;
   gazeQualityView: Table;
   report: QaReport;
+  /** Serialize the master frame, views, and QA report into `outDir`. */
+  save(outDir: string): Promise<WrittenOutputs>;
 }
 
 /** Run every cleaning stage over an already-parsed raw table. */
@@ -45,13 +48,15 @@ export function cleanTable(
   const views = buildViews(table, config);
   const report = buildReport(table, config, { recordingId });
 
-  return {
+  const result: CleanResult = {
     frame: table,
     saccadeView: views.saccade,
     pupillometryView: views.pupillometry,
     gazeQualityView: views.gazeQuality,
     report,
+    save: (outDir: string) => writeOutputs(result, outDir),
   };
+  return result;
 }
 
 /** Clean raw Varjo CSV text. `config` may be a resolved config or partial overrides. */
