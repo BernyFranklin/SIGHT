@@ -6,6 +6,7 @@
 
 export * from './schema';
 export * from './frame';
+export * from './config';
 export {
   parseVarjoCsv,
   readVarjoCsv,
