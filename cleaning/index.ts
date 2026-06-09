@@ -17,3 +17,4 @@ export { deriveColumns } from './core/deriveColumns';
 export { flagInvalidRuns } from './core/invalidRuns';
 export { computeFlags } from './core/flags';
 export { flagExcluded } from './core/excluded';
+export { interpolatePupils } from './core/interpolate';
