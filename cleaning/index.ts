@@ -13,3 +13,7 @@ export {
   tokenizeLine,
   VarjoParseError,
 } from './ingest/parseVarjoCsv';
+export { deriveColumns } from './core/deriveColumns';
+export { flagInvalidRuns } from './core/invalidRuns';
+export { computeFlags } from './core/flags';
+export { flagExcluded } from './core/excluded';
