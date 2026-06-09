@@ -18,3 +18,16 @@ export { flagInvalidRuns } from './core/invalidRuns';
 export { computeFlags } from './core/flags';
 export { flagExcluded } from './core/excluded';
 export { interpolatePupils } from './core/interpolate';
+export { buildViews, type CleanViews } from './views/buildViews';
+export {
+  buildReport,
+  reportToMarkdown,
+  type QaReport,
+  type ReportMeta,
+} from './qa/buildReport';
+export {
+  cleanRecording,
+  cleanRecordingText,
+  cleanTable,
+  type CleanResult,
+} from './pipeline/cleanRecording';
