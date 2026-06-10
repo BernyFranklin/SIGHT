@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { casesApi } from '@app/api/cases';
+import { cleaningApi, type QaReport } from '@app/api/cleaning';
 import { markersApi } from '@app/api/markers';
 import { type Project, projectApi } from '@app/api/project';
 import { type ProjectConfigFile, projectConfigApi } from '@app/api/projectConfig';
@@ -30,6 +31,8 @@ interface ProjectState {
   hasCases: Record<string, boolean>;
   projectConfigs: Record<string, ProjectConfigFile | null>;
   cases: Record<string, CaseRecord[]>;
+  cleaningReports: Record<string, Record<string, QaReport | null>>;
+  cleaningBusy: Record<string, Record<string, boolean>>;
   loadRecents: () => Promise<void>;
   createProject: () => Promise<void>;
   openProject: () => Promise<void>;
@@ -37,6 +40,8 @@ interface ProjectState {
   refreshMarkers: (path: string) => Promise<void>;
   refreshProjectConfig: (path: string) => Promise<void>;
   refreshCases: (path: string) => Promise<void>;
+  runCleaning: (path: string, caseId: string) => Promise<void>;
+  refreshCleaning: (path: string, caseId: string) => Promise<void>;
   setActive: (path: string) => void;
   closeActive: () => void;
 }
@@ -55,6 +60,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
   hasCases: {},
   projectConfigs: {},
   cases: {},
+  cleaningReports: {},
+  cleaningBusy: {},
 
   loadRecents: async () => {
     const recents = await projectApi.listRecent();
@@ -148,6 +155,47 @@ export const useProjectStore = create<ProjectState>((set) => ({
     }));
   },
 
+  runCleaning: async (path, caseId) => {
+    set((s) => ({
+      cleaningBusy: {
+        ...s.cleaningBusy,
+        [path]: { ...s.cleaningBusy[path], [caseId]: true },
+      },
+    }));
+    try {
+      const report = await cleaningApi.run(path, caseId);
+      set((s) => ({
+        cleaningReports: {
+          ...s.cleaningReports,
+          [path]: { ...s.cleaningReports[path], [caseId]: report },
+        },
+      }));
+    } catch (err) {
+      console.error('[useProjectStore] failed to clean case', err);
+    } finally {
+      set((s) => ({
+        cleaningBusy: {
+          ...s.cleaningBusy,
+          [path]: { ...s.cleaningBusy[path], [caseId]: false },
+        },
+      }));
+    }
+  },
+
+  refreshCleaning: async (path, caseId) => {
+    try {
+      const report = await cleaningApi.readReport(path, caseId);
+      set((s) => ({
+        cleaningReports: {
+          ...s.cleaningReports,
+          [path]: { ...s.cleaningReports[path], [caseId]: report },
+        },
+      }));
+    } catch (err) {
+      console.error('[useProjectStore] failed to read cleaning report', err);
+    }
+  },
+
   setActive: (path) => set({ activePath: path }),
 
   closeActive: () => {
@@ -162,7 +210,11 @@ export const useProjectStore = create<ProjectState>((set) => ({
       delete hasCases[closedPath];
       const projectConfigs = { ...s.projectConfigs };
       delete projectConfigs[closedPath];
-      return { open, activePath, cases, hasCases, projectConfigs };
+      const cleaningReports = { ...s.cleaningReports };
+      delete cleaningReports[closedPath];
+      const cleaningBusy = { ...s.cleaningBusy };
+      delete cleaningBusy[closedPath];
+      return { open, activePath, cases, hasCases, projectConfigs, cleaningReports, cleaningBusy };
     });
     const workspace = useWorkspaceStore.getState();
     workspace.tabs
