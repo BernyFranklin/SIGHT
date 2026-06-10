@@ -74,14 +74,19 @@ export function hasProjectConfig(projectPath: string): boolean {
   return existsSync(projectConfigPath(projectPath));
 }
 
-export async function readProjectConfig(projectPath: string): Promise<ProjectConfigFile | null> {
+export async function readProjectConfig(
+  projectPath: string,
+): Promise<ProjectConfigFile | null> {
   const file = projectConfigPath(projectPath);
   if (!existsSync(file)) return null;
   try {
     const raw = await readFile(file, 'utf-8');
     return JSON.parse(raw) as ProjectConfigFile;
   } catch (err) {
-    console.error('[projectConfigService] failed to read project-config.json', err);
+    console.error(
+      '[projectConfigService] failed to read project-config.json',
+      err,
+    );
     return null;
   }
 }
@@ -92,5 +97,9 @@ export async function writeProjectConfig(
 ): Promise<void> {
   const dir = path.join(projectPath, SIGHT_DIR);
   await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, PROJECT_CONFIG_FILE), JSON.stringify(data, null, 2), 'utf-8');
+  await writeFile(
+    path.join(dir, PROJECT_CONFIG_FILE),
+    JSON.stringify(data, null, 2),
+    'utf-8',
+  );
 }

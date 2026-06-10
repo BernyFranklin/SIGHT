@@ -5,6 +5,7 @@ import started from 'electron-squirrel-startup';
 
 import { IpcChannels } from '../ipc';
 import { registerCasesIpc } from '../ipc/cases';
+import { registerCleaningIpc } from '../ipc/cleaning';
 import { registerMarkersIpc } from '../ipc/markers';
 import { registerProjectIpc } from '../ipc/project';
 import { registerProjectConfigIpc } from '../ipc/projectConfig';
@@ -41,7 +42,6 @@ const createWindow = () => {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
-
 };
 
 ipcMain.handle(IpcChannels.windowMinimize, (event) => {
@@ -57,13 +57,16 @@ ipcMain.handle(IpcChannels.windowClose, (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();
 });
 ipcMain.handle(IpcChannels.windowToggleDevTools, (event) => {
-  event.sender.isDevToolsOpened() ? event.sender.closeDevTools() : event.sender.openDevTools();
+  event.sender.isDevToolsOpened()
+    ? event.sender.closeDevTools()
+    : event.sender.openDevTools();
 });
 
 registerProjectIpc(ipcMain);
 registerMarkersIpc(ipcMain);
 registerProjectConfigIpc(ipcMain);
 registerCasesIpc(ipcMain);
+registerCleaningIpc(ipcMain);
 
 app.on('ready', createWindow);
 

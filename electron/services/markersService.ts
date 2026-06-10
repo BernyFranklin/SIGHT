@@ -28,7 +28,9 @@ export function hasMarkers(projectPath: string): boolean {
   return existsSync(markersPath(projectPath));
 }
 
-export async function readMarkers(projectPath: string): Promise<MarkersFile | null> {
+export async function readMarkers(
+  projectPath: string,
+): Promise<MarkersFile | null> {
   const file = markersPath(projectPath);
   if (!existsSync(file)) return null;
   try {
@@ -40,8 +42,15 @@ export async function readMarkers(projectPath: string): Promise<MarkersFile | nu
   }
 }
 
-export async function writeMarkers(projectPath: string, data: MarkersFile): Promise<void> {
+export async function writeMarkers(
+  projectPath: string,
+  data: MarkersFile,
+): Promise<void> {
   const dir = path.join(projectPath, SIGHT_DIR);
   await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, MARKERS_FILE), JSON.stringify(data, null, 2), 'utf-8');
+  await writeFile(
+    path.join(dir, MARKERS_FILE),
+    JSON.stringify(data, null, 2),
+    'utf-8',
+  );
 }

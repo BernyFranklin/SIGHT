@@ -35,6 +35,6 @@ describe('MenuBar', () => {
     render(<MenuBar />);
     fireEvent.click(screen.getByRole('button', { name: 'File' }));
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'New Session' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'New Project' })).toBeInTheDocument();
   });
 });

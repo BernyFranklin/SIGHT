@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Pencil, Settings, Trash2, UserPlus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Settings, Sparkles, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { casesApi } from '@app/api/cases';
@@ -65,6 +65,7 @@ function ProjectNode({
   const openTab = useWorkspaceStore((s) => s.openTab);
   const closeTab = useWorkspaceStore((s) => s.closeTab);
   const refreshCases = useProjectStore((s) => s.refreshCases);
+  const runCleaning = useProjectStore((s) => s.runCleaning);
   const [expanded, setExpanded] = useState(true);
   const [configOpen, setConfigOpen] = useState(false);
   const configWrapperRef = useRef<HTMLDivElement>(null);
@@ -136,6 +137,8 @@ function ProjectNode({
       projectPath: path,
       caseRecordId: record.id,
     });
+
+  const cleanCase = (record: CaseRecord) => runCleaning(path, record.id);
 
   const deleteCase = async (record: CaseRecord) => {
     try {
@@ -231,6 +234,7 @@ function ProjectNode({
                 config={config}
                 onOpenCase={openCaseTab}
                 onEditCase={openEditCaseTab}
+                onCleanCase={cleanCase}
                 onDeleteCase={deleteCase}
               />
             )}
@@ -250,12 +254,14 @@ function CasesFolder({
   config,
   onOpenCase,
   onEditCase,
+  onCleanCase,
   onDeleteCase,
 }: {
   cases: CaseRecord[];
   config: ProjectConfigFile | null;
   onOpenCase: (record: CaseRecord) => void;
   onEditCase: (record: CaseRecord) => void;
+  onCleanCase: (record: CaseRecord) => void;
   onDeleteCase: (record: CaseRecord) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
@@ -308,6 +314,10 @@ function CasesFolder({
             onEditCase(menu.record);
             setMenu(null);
           }}
+          onClean={() => {
+            onCleanCase(menu.record);
+            setMenu(null);
+          }}
           onDelete={() => {
             setPendingDelete(menu.record);
             setMenu(null);
@@ -334,12 +344,14 @@ function CaseContextMenu({
   x,
   y,
   onEdit,
+  onClean,
   onDelete,
   onClose,
 }: {
   x: number;
   y: number;
   onEdit: () => void;
+  onClean: () => void;
   onDelete: () => void;
   onClose: () => void;
 }) {
@@ -374,6 +386,15 @@ function CaseContextMenu({
       >
         <Pencil size={14} className="shrink-0 text-text-muted" />
         Edit
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        onClick={onClean}
+        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-text transition-colors hover:bg-surface"
+      >
+        <Sparkles size={14} className="shrink-0 text-text-muted" />
+        Clean gaze data
       </button>
       <button
         type="button"

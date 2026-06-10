@@ -17,7 +17,8 @@ export function registerCasesIpc(ipcMain: IpcMain): void {
   );
   ipcMain.handle(
     IpcChannels.casesWrite,
-    (_event, projectPath: string, data: CasesFile) => writeCases(projectPath, data),
+    (_event, projectPath: string, data: CasesFile) =>
+      writeCases(projectPath, data),
   );
   ipcMain.handle(IpcChannels.casesHas, (_event, projectPath: string) =>
     hasCases(projectPath),
@@ -27,7 +28,8 @@ export function registerCasesIpc(ipcMain: IpcMain): void {
     (_event, projectPath: string, id: string, bytes: ArrayBuffer) =>
       writeGazeFile(projectPath, id, bytes),
   );
-  ipcMain.handle(IpcChannels.casesDelete, (_event, projectPath: string, id: string) =>
-    deleteCase(projectPath, id),
+  ipcMain.handle(
+    IpcChannels.casesDelete,
+    (_event, projectPath: string, id: string) => deleteCase(projectPath, id),
   );
 }
