@@ -130,7 +130,11 @@ export function formatCell(col: Column, row: number): string {
 
 /** Serialize a table to CSV (header + rows, `\n` line endings). */
 export function toCsv(table: Table): string {
-  const cols = table.order.map((name) => table.cols.get(name)!);
+  const cols = table.order.map((name) => {
+    const col = table.cols.get(name);
+    if (!col) throw new Error(`toCsv: missing column "${name}"`);
+    return col;
+  });
   const lines: string[] = [table.order.join(',')];
   for (let row = 0; row < table.numRows; row++) {
     const cells = new Array<string>(cols.length);

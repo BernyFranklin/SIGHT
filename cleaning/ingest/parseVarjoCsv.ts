@@ -131,18 +131,38 @@ export function parseVarjoCsv(text: string): Table {
   const numRows = lines.length - 1;
   const table = createTable(numRows);
 
-  // Pre-allocate one typed array per flat output column.
+  // Pre-allocate one typed array per flat output column, and resolve each raw
+  // field to its target array(s) up front so the hot row loop indexes directly.
   const numCols = new Map<string, Float64Array>();
   const strCols = new Map<string, string[]>();
   const bigCols = new Map<string, BigInt64Array>();
-  for (const token of RAW_LAYOUT) {
-    for (const name of token.outs) {
-      if (token.type === 'num') numCols.set(name, new Float64Array(numRows));
-      else if (token.type === 'str')
-        strCols.set(name, new Array<string>(numRows));
-      else bigCols.set(name, new BigInt64Array(numRows));
+
+  type FieldTarget =
+    | { type: 'num'; name: string; arr: Float64Array }
+    | { type: 'bigint'; name: string; arr: BigInt64Array }
+    | { type: 'str'; arr: string[] }
+    | { type: 'tuple'; names: readonly string[]; arrs: Float64Array[] };
+
+  const targets: FieldTarget[] = RAW_LAYOUT.map((spec) => {
+    if (spec.type === 'str') {
+      const arr = new Array<string>(numRows);
+      strCols.set(spec.outs[0], arr);
+      return { type: 'str', arr };
     }
-  }
+    if (spec.type === 'bigint') {
+      const arr = new BigInt64Array(numRows);
+      bigCols.set(spec.outs[0], arr);
+      return { type: 'bigint', name: spec.outs[0], arr };
+    }
+    const arrs = spec.outs.map((name) => {
+      const arr = new Float64Array(numRows);
+      numCols.set(name, arr);
+      return arr;
+    });
+    return spec.outs.length === 1
+      ? { type: 'num', name: spec.outs[0], arr: arrs[0] }
+      : { type: 'tuple', names: spec.outs, arrs };
+  });
 
   for (let row = 0; row < numRows; row++) {
     const line = lines[row + 1];
@@ -152,31 +172,36 @@ export function parseVarjoCsv(text: string): Table {
         `row ${row}: expected ${RAW_LAYOUT.length} fields, got ${tokens.length}`,
       );
     }
-    for (let f = 0; f < RAW_LAYOUT.length; f++) {
-      const spec = RAW_LAYOUT[f];
+    for (let f = 0; f < targets.length; f++) {
+      const target = targets[f];
       const token = tokens[f];
-      if (spec.outs.length === 1) {
-        const name = spec.outs[0];
-        if (spec.type === 'num') {
-          numCols.get(name)![row] = parseNum(token, row, name);
-        } else if (spec.type === 'str') {
-          strCols.get(name)![row] = token.trim();
-        } else {
+      switch (target.type) {
+        case 'num':
+          target.arr[row] = parseNum(token, row, target.name);
+          break;
+        case 'str':
+          target.arr[row] = token.trim();
+          break;
+        case 'bigint': {
           const t = token.trim();
           if (t === '')
             throw new VarjoParseError(
-              `row ${row}: timestamp column "${name}" is empty`,
+              `row ${row}: timestamp column "${target.name}" is empty`,
             );
-          bigCols.get(name)![row] = BigInt(t);
+          target.arr[row] = BigInt(t);
+          break;
         }
-      } else if (token.trim() === '') {
-        // INVALID frames write tuple signals as empty fields — treat as missing.
-        for (const name of spec.outs) numCols.get(name)![row] = NaN;
-      } else {
-        const values = tupleValues(token, spec.outs.length, row, f);
-        for (let k = 0; k < spec.outs.length; k++) {
-          const name = spec.outs[k];
-          numCols.get(name)![row] = parseNum(values[k], row, name);
+        case 'tuple': {
+          if (token.trim() === '') {
+            // INVALID frames write tuple signals as empty fields — treat as missing.
+            for (const arr of target.arrs) arr[row] = NaN;
+          } else {
+            const values = tupleValues(token, target.arrs.length, row, f);
+            for (let k = 0; k < target.arrs.length; k++) {
+              target.arrs[k][row] = parseNum(values[k], row, target.names[k]);
+            }
+          }
+          break;
         }
       }
     }
@@ -184,9 +209,22 @@ export function parseVarjoCsv(text: string): Table {
 
   // Assemble in canonical source order.
   for (const name of FLAT_COLUMNS) {
-    if (numCols.has(name)) addNumColumn(table, name, numCols.get(name)!);
-    else if (strCols.has(name)) addStrColumn(table, name, strCols.get(name)!);
-    else addBigIntColumn(table, name, bigCols.get(name)!);
+    const num = numCols.get(name);
+    if (num) {
+      addNumColumn(table, name, num);
+      continue;
+    }
+    const str = strCols.get(name);
+    if (str) {
+      addStrColumn(table, name, str);
+      continue;
+    }
+    const big = bigCols.get(name);
+    if (big) {
+      addBigIntColumn(table, name, big);
+      continue;
+    }
+    throw new VarjoParseError(`internal: no column allocated for "${name}"`);
   }
   return table;
 }

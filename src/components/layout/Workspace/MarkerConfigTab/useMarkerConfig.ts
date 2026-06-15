@@ -111,14 +111,21 @@ export function useMarkerConfig(projectPath: string) {
   const handleSave = async () => {
     if (!canSave || !projectPath) return;
     const sorted = sortByStart(events, fps);
+    // canSave gates this on allEventsComplete, so every timestamp converts;
+    // guard anyway rather than asserting non-null.
+    const toFrame = (ts: string): number => {
+      const frame = tsToFrames(ts, fps);
+      if (frame == null) throw new Error(`invalid timestamp: "${ts}"`);
+      return frame;
+    };
     const payload: MarkersFile = {
       name: markerSetName,
       fps,
       markers: sorted.map((e, i) => ({
         id: i + 1,
         name: e.name,
-        startFrame: tsToFrames(e.startTime, fps)!,
-        endFrame: tsToFrames(e.endTime, fps)!,
+        startFrame: toFrame(e.startTime),
+        endFrame: toFrame(e.endTime),
       })),
     };
     setSaving(true);
