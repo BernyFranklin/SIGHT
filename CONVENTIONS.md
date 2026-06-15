@@ -29,6 +29,7 @@ shared/        Cross-domain pure utilities (csv, stats, diagnostics)
 saccades/      Gaze/saccade domain library
 pupil/         Pupillometry domain library
 viz/           Rendering primitives (PNG, backends)
+cleaning/      Gaze-cleaning pipeline (Varjo ingest → QA report; TS port of the Python spec)
 ```
 
 Tests live **co-located** as `*.test.ts(x)` next to source. No central `tests/` directory.
@@ -44,6 +45,7 @@ Defined once in `vite.aliases.ts`, mirrored in `tsconfig.json` paths:
 @saccades/*  → saccades/*
 @pupil/*     → pupil/*
 @viz/*       → viz/*
+@cleaning    → cleaning/index.ts   (bare specifier; @cleaning/* for subpaths)
 ```
 
 Use aliases for any cross-directory import. Relative paths are fine for sibling/child imports within a folder.
