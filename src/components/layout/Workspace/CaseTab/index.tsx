@@ -56,7 +56,7 @@ function DataQualityPanel({
       {report == null ? (
         <div className="flex flex-col gap-2">
           <span className="text-sm text-text-muted">
-            This case's gaze data has not been cleaned yet.
+            This case&apos;s gaze data has not been cleaned yet.
           </span>
           <CleanButton label="Clean gaze data" busy={busy} onClick={onClean} />
         </div>

@@ -2,6 +2,7 @@ import { Info, MinusCircle } from 'lucide-react';
 
 import { NAME_MAX, timestampHint } from '../constants';
 import type { Event, EventError, Fps } from '../types';
+
 import { TimestampInput } from './TimestampInput';
 
 export function EventField({

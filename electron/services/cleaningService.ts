@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { cleanRecording } from '@cleaning/pipeline/cleanRecording';
 import type { CleaningConfigOverrides, QaReport } from '@cleaning';
+import { cleanRecording } from '@cleaning/pipeline/cleanRecording';
 
 /**
  * Bridges the gaze cleaning library to a project's on-disk layout. A case's raw

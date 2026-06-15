@@ -11,11 +11,11 @@ import {
   type CleaningConfigOverrides,
   resolveConfig,
 } from '../config';
-import { computeFlags } from '../core/flags';
 import { deriveColumns } from '../core/deriveColumns';
 import { flagExcluded } from '../core/excluded';
-import { flagInvalidRuns } from '../core/invalidRuns';
+import { computeFlags } from '../core/flags';
 import { interpolatePupils } from '../core/interpolate';
+import { flagInvalidRuns } from '../core/invalidRuns';
 import { type Table } from '../frame';
 import { parseVarjoCsv, readVarjoCsv } from '../ingest/parseVarjoCsv';
 import { writeOutputs, type WrittenOutputs } from '../outputs/writeOutputs';

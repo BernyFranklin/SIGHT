@@ -21,7 +21,7 @@ export function useMarkerConfig(projectPath: string) {
 
   const [markerSetName, setMarkerSetNameRaw] = useState('');
   const [fps, setFpsRaw] = useState<Fps>(DEFAULT_FPS);
-  const [events, setEvents] = useState<Event[]>(() => [blankEvent(`e${++idCounter.current}`)]);
+  const [events, setEvents] = useState<Event[]>(() => [blankEvent('e0')]);
   const [saved, setSaved] = useState<MarkerConfig | null>(null);
   const [touched, setTouched] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<PendingRemove | null>(null);
