@@ -14,10 +14,18 @@ import { ReadOnlyValue } from './components/ReadOnlyValue';
 import { TextArea } from './components/TextArea';
 import { ToggleSwitch } from './components/ToggleSwitch';
 import { GROUPS, STATUS_MESSAGES } from './constants';
-import type { DependencyRule, FieldSpec, ProjectConfig, ProjectConfigKey } from './types';
+import type {
+  DependencyRule,
+  FieldSpec,
+  ProjectConfig,
+  ProjectConfigKey,
+} from './types';
 import { useProjectConfig } from './useProjectConfig';
 
-function evalDependency(rule: DependencyRule | undefined, config: ProjectConfig): {
+function evalDependency(
+  rule: DependencyRule | undefined,
+  config: ProjectConfig,
+): {
   hidden: boolean;
   dimmed: boolean;
 } {
@@ -67,7 +75,9 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
             maxLength={field.maxLength}
             rows={field.rows}
             placeholder={field.placeholder}
-            onChange={(s) => setField(field.key, s as ProjectConfig[ProjectConfigKey])}
+            onChange={(s) =>
+              setField(field.key, s as ProjectConfig[ProjectConfigKey])
+            }
           />
         );
         break;
@@ -85,7 +95,9 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
             max={field.max}
             step={field.step}
             nullable={field.nullable}
-            onChange={(n) => setField(field.key, n as ProjectConfig[ProjectConfigKey])}
+            onChange={(n) =>
+              setField(field.key, n as ProjectConfig[ProjectConfigKey])
+            }
             invalid={Boolean(err)}
           />
         );
@@ -104,7 +116,9 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
             max={field.max}
             step={field.step}
             decimals={field.decimals}
-            onChange={(n) => setField(field.key, n as ProjectConfig[ProjectConfigKey])}
+            onChange={(n) =>
+              setField(field.key, n as ProjectConfig[ProjectConfigKey])
+            }
           />
         );
         break;
@@ -121,8 +135,12 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
             minBounds={field.minBounds}
             maxBounds={field.maxBounds}
             step={field.step}
-            onMinChange={(n) => setField(field.minKey, n as ProjectConfig[ProjectConfigKey])}
-            onMaxChange={(n) => setField(field.maxKey, n as ProjectConfig[ProjectConfigKey])}
+            onMinChange={(n) =>
+              setField(field.minKey, n as ProjectConfig[ProjectConfigKey])
+            }
+            onMaxChange={(n) =>
+              setField(field.maxKey, n as ProjectConfig[ProjectConfigKey])
+            }
             invalid={Boolean(err)}
           />
         );
@@ -135,7 +153,9 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
             name={field.key}
             value={v}
             options={field.options}
-            onChange={(s) => setField(field.key, s as ProjectConfig[ProjectConfigKey])}
+            onChange={(s) =>
+              setField(field.key, s as ProjectConfig[ProjectConfigKey])
+            }
           />
         );
         break;
@@ -145,7 +165,9 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
         input = (
           <ToggleSwitch
             value={v}
-            onChange={(b) => setField(field.key, b as ProjectConfig[ProjectConfigKey])}
+            onChange={(b) =>
+              setField(field.key, b as ProjectConfig[ProjectConfigKey])
+            }
           />
         );
         break;
@@ -163,7 +185,9 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
             <Dropdown
               value={v}
               options={field.options}
-              onChange={(s) => setField(field.key, s as ProjectConfig[ProjectConfigKey])}
+              onChange={(s) =>
+                setField(field.key, s as ProjectConfig[ProjectConfigKey])
+              }
               placeholder={field.placeholder}
               invalid={Boolean(err)}
             />
@@ -174,7 +198,10 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
                 maxLength={field.otherTrigger?.maxLength}
                 placeholder={field.otherTrigger?.placeholder}
                 onChange={(e) =>
-                  setField(otherKey, e.target.value as ProjectConfig[ProjectConfigKey])
+                  setField(
+                    otherKey,
+                    e.target.value as ProjectConfig[ProjectConfigKey],
+                  )
                 }
                 className={`w-48 rounded-sm border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary ${
                   otherErr ? 'border-red-500' : 'border-border'
@@ -192,7 +219,13 @@ export function ProjectConfigTab({ tab }: { tab: Tab }) {
     }
 
     return (
-      <FieldRow key={key} label={field.label} units={field.units} dimmed={dimmed} message={message}>
+      <FieldRow
+        key={key}
+        label={field.label}
+        units={field.units}
+        dimmed={dimmed}
+        message={message}
+      >
         {input}
       </FieldRow>
     );

@@ -45,7 +45,9 @@ export function FileUploadZone({
           <FileText size={16} className="shrink-0 text-text-muted" />
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm text-text">{file.name}</div>
-            <div className="text-xs text-text-muted">{formatSize(file.size)}</div>
+            <div className="text-xs text-text-muted">
+              {formatSize(file.size)}
+            </div>
           </div>
           <button
             type="button"
@@ -95,12 +97,15 @@ export function FileUploadZone({
           accept(e.dataTransfer.files?.[0]);
         }}
         className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border border-dashed px-4 py-6 text-center transition-colors ${
-          dragging ? 'border-primary bg-surface-raised' : 'border-border bg-bg hover:bg-surface'
+          dragging
+            ? 'border-primary bg-surface-raised'
+            : 'border-border bg-bg hover:bg-surface'
         } ${message ? 'border-red-500' : ''}`}
       >
         <Upload size={18} className="text-text-muted" />
         <span className="text-sm text-text">
-          Drag &amp; drop the gaze data CSV here, or <span className="text-primary">browse</span>
+          Drag &amp; drop the gaze data CSV here, or{' '}
+          <span className="text-primary">browse</span>
         </span>
         <span className="text-xs text-text-muted">.csv files only</span>
         <input

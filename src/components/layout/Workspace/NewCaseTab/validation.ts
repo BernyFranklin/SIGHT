@@ -27,7 +27,14 @@ function isBlank(value: string | number | null | undefined): boolean {
 }
 
 export function validateCase(input: CaseValidationInput): CaseValidationResult {
-  const { caseId, file, demographics, fields, existingCaseIds, requireFile = true } = input;
+  const {
+    caseId,
+    file,
+    demographics,
+    fields,
+    existingCaseIds,
+    requireFile = true,
+  } = input;
   const result: CaseValidationResult = { fieldErrors: {} };
 
   // Case identifier
@@ -37,8 +44,13 @@ export function validateCase(input: CaseValidationInput): CaseValidationResult {
   } else if (trimmed.length > CASE_ID_MAX) {
     result.caseIdError = `Case ID must be ${CASE_ID_MAX} characters or fewer.`;
   } else if (!CASE_ID_RE.test(trimmed)) {
-    result.caseIdError = 'Only letters, numbers, hyphens, and underscores are allowed.';
-  } else if (existingCaseIds.some((id) => id.trim().toLowerCase() === trimmed.toLowerCase())) {
+    result.caseIdError =
+      'Only letters, numbers, hyphens, and underscores are allowed.';
+  } else if (
+    existingCaseIds.some(
+      (id) => id.trim().toLowerCase() === trimmed.toLowerCase(),
+    )
+  ) {
     result.caseIdError = 'A case with this ID already exists in this project.';
   }
 
@@ -67,15 +79,26 @@ export function validateCase(input: CaseValidationInput): CaseValidationResult {
         break;
       }
       case 'asrs': {
-        const iErr = validateInt(demographics[field.inattentionKey], 'Inattention', 0, 36);
+        const iErr = validateInt(
+          demographics[field.inattentionKey],
+          'Inattention',
+          0,
+          36,
+        );
         if (iErr) result.fieldErrors[field.inattentionKey] = iErr;
-        const hErr = validateInt(demographics[field.hyperactivityKey], 'Hyperactivity', 0, 36);
+        const hErr = validateInt(
+          demographics[field.hyperactivityKey],
+          'Hyperactivity',
+          0,
+          36,
+        );
         if (hErr) result.fieldErrors[field.hyperactivityKey] = hErr;
         break;
       }
       case 'custom-number': {
         const v = demographics[field.key];
-        if (isBlank(v)) result.fieldErrors[field.key] = `${field.label} is required.`;
+        if (isBlank(v))
+          result.fieldErrors[field.key] = `${field.label} is required.`;
         else if (typeof v !== 'number' || !Number.isFinite(v)) {
           result.fieldErrors[field.key] = `${field.label} must be a number.`;
         }
@@ -83,9 +106,11 @@ export function validateCase(input: CaseValidationInput): CaseValidationResult {
       }
       case 'custom-text': {
         const v = demographics[field.key];
-        if (isBlank(v)) result.fieldErrors[field.key] = `${field.label} is required.`;
+        if (isBlank(v))
+          result.fieldErrors[field.key] = `${field.label} is required.`;
         else if (String(v).length > CUSTOM_TEXT_MAX) {
-          result.fieldErrors[field.key] = `${field.label} must be ${CUSTOM_TEXT_MAX} characters or fewer.`;
+          result.fieldErrors[field.key] =
+            `${field.label} must be ${CUSTOM_TEXT_MAX} characters or fewer.`;
         }
         break;
       }
@@ -108,7 +133,9 @@ function validateInt(
   max: number,
 ): string | undefined {
   if (isBlank(value)) return `${label} is required.`;
-  if (typeof value !== 'number' || !Number.isInteger(value)) return `${label} must be a whole number.`;
-  if (value < min || value > max) return `${label} must be between ${min} and ${max}.`;
+  if (typeof value !== 'number' || !Number.isInteger(value))
+    return `${label} must be a whole number.`;
+  if (value < min || value > max)
+    return `${label} must be between ${min} and ${max}.`;
   return undefined;
 }

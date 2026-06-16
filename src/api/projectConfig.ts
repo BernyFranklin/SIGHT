@@ -1,4 +1,8 @@
-import type { CustomAttribute, CustomAttributeType, ProjectConfigFile } from '@electron/preload';
+import type {
+  CustomAttribute,
+  CustomAttributeType,
+  ProjectConfigFile,
+} from '@electron/preload';
 
 export type { CustomAttribute, CustomAttributeType, ProjectConfigFile };
 

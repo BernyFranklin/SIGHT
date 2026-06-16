@@ -26,7 +26,8 @@ function collectDemographics(
       out[field.otherKey] = demographics[field.otherKey] ?? null;
     } else if (field.kind === 'asrs') {
       out[field.inattentionKey] = demographics[field.inattentionKey] ?? null;
-      out[field.hyperactivityKey] = demographics[field.hyperactivityKey] ?? null;
+      out[field.hyperactivityKey] =
+        demographics[field.hyperactivityKey] ?? null;
     } else {
       out[field.key] = demographics[field.key] ?? null;
     }
@@ -34,7 +35,11 @@ function collectDemographics(
   return out;
 }
 
-export function useNewCase(projectPath: string, tabId: string, editRecordId?: string) {
+export function useNewCase(
+  projectPath: string,
+  tabId: string,
+  editRecordId?: string,
+) {
   const config = useProjectStore((s) => s.projectConfigs[projectPath] ?? null);
   const projectCases = useProjectStore((s) => s.cases[projectPath]);
   const refreshCases = useProjectStore((s) => s.refreshCases);
@@ -42,7 +47,9 @@ export function useNewCase(projectPath: string, tabId: string, editRecordId?: st
 
   const editRecord = useMemo(
     () =>
-      editRecordId ? (projectCases ?? []).find((c) => c.id === editRecordId) : undefined,
+      editRecordId
+        ? (projectCases ?? []).find((c) => c.id === editRecordId)
+        : undefined,
     // Resolve the record once on mount; subsequent edits live in local state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -53,15 +60,18 @@ export function useNewCase(projectPath: string, tabId: string, editRecordId?: st
 
   const [caseId, setCaseId] = useState(() => editRecord?.caseId ?? '');
   const [file, setFile] = useState<File | null>(null);
-  const [demographics, setDemographics] = useState<Record<string, string | number | null>>(
-    () => ({ ...(editRecord?.demographics ?? {}) }),
-  );
+  const [demographics, setDemographics] = useState<
+    Record<string, string | number | null>
+  >(() => ({ ...(editRecord?.demographics ?? {}) }));
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const existingCaseIds = useMemo(
-    () => (projectCases ?? []).filter((c) => c.id !== editRecordId).map((c) => c.caseId),
+    () =>
+      (projectCases ?? [])
+        .filter((c) => c.id !== editRecordId)
+        .map((c) => c.caseId),
     [projectCases, editRecordId],
   );
 
@@ -79,7 +89,9 @@ export function useNewCase(projectPath: string, tabId: string, editRecordId?: st
   );
 
   const hasErrors =
-    Boolean(caseIdError) || Boolean(fileError) || Object.keys(fieldErrors).length > 0;
+    Boolean(caseIdError) ||
+    Boolean(fileError) ||
+    Object.keys(fieldErrors).length > 0;
   // Button gating per spec: case ID filled, plus a file when creating. Full validation runs on submit.
   const canSubmit =
     caseId.trim().length > 0 && (mode === 'edit' || Boolean(file));

@@ -41,7 +41,12 @@ function fakeReport(overrides: Partial<QaReport> = {}): QaReport {
       right_eye_valid: 288,
       right_eye_valid_ratio: 0.72,
     },
-    invalid_runs: { count: 3, total_frames: 110, max_length: 74, mean_length: 36.7 },
+    invalid_runs: {
+      count: 3,
+      total_frames: 110,
+      max_length: 74,
+      mean_length: 36.7,
+    },
     sentinel_replacements: {
       focus_distance_sentinel: 0,
       focus_out_of_bounds: 13,
@@ -51,7 +56,13 @@ function fakeReport(overrides: Partial<QaReport> = {}): QaReport {
     blinks: { left: 22, right: 22 },
     pupil_asymmetry_exceeded: 0,
     focus_unstable: 212,
-    interpolation: { method: 'linear', left_interpolated: 65, right_interpolated: 65, left_pct: 16, right_pct: 16 },
+    interpolation: {
+      method: 'linear',
+      left_interpolated: 65,
+      right_interpolated: 65,
+      left_pct: 16,
+      right_pct: 16,
+    },
     excluded: 112,
     excluded_pct: 28,
     warnings: [],
@@ -68,11 +79,14 @@ beforeEach(() => {
   run.mockResolvedValue(fakeReport());
   readReport.mockResolvedValue(null);
   // Mutate the namespace captured by cleaningApi at module load (don't replace window.api).
-  Object.assign((window as unknown as { api: { cleaning: object } }).api.cleaning, {
-    run,
-    readReport,
-    hasReport: vi.fn().mockResolvedValue(false),
-  });
+  Object.assign(
+    (window as unknown as { api: { cleaning: object } }).api.cleaning,
+    {
+      run,
+      readReport,
+      hasReport: vi.fn().mockResolvedValue(false),
+    },
+  );
   useProjectStore.setState({
     cases: { [PROJECT]: [RECORD] },
     projectConfigs: { [PROJECT]: null },
@@ -88,21 +102,29 @@ afterEach(() => {
 describe('CaseTab — Data Quality panel', () => {
   it('shows a clean button when no report exists', async () => {
     render(<CaseTab tab={TAB} />);
-    expect(await screen.findByRole('button', { name: 'Clean gaze data' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Clean gaze data' }),
+    ).toBeInTheDocument();
   });
 
   it('calls cleaningApi.run when the clean button is clicked', async () => {
     render(<CaseTab tab={TAB} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Clean gaze data' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Clean gaze data' }),
+    );
     await waitFor(() => expect(run).toHaveBeenCalledWith(PROJECT, RECORD.id));
   });
 
   it('renders the report summary when a report is present', () => {
-    useProjectStore.setState({ cleaningReports: { [PROJECT]: { [RECORD.id]: fakeReport() } } });
+    useProjectStore.setState({
+      cleaningReports: { [PROJECT]: { [RECORD.id]: fakeReport() } },
+    });
     render(<CaseTab tab={TAB} />);
     expect(screen.getByText('pass')).toBeInTheDocument();
     expect(screen.getByText('72.0')).toBeInTheDocument();
     expect(screen.getByText('3 gaps / 110 frames')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Re-clean' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Re-clean' }),
+    ).toBeInTheDocument();
   });
 });

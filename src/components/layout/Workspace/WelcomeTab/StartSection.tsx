@@ -27,27 +27,27 @@ export function StartSection() {
       <div>
         <SectionHeader>Recent</SectionHeader>
         <ul className="flex flex-col">
-          {recents.length === 0
-            ? (
-                <li className="px-2 py-1 text-sm italic text-text-muted opacity-60">
-                  No recent projects
-                </li>
-              )
-            : recents.slice(0, 3).map((p) => (
-                <li key={p.path}>
-                  <button
-                    type="button"
-                    onClick={() => void openRecent(p.path)}
-                    className="flex w-full flex-col items-start rounded-sm px-2 py-1.5 text-left transition-colors hover:bg-surface"
-                    title={p.path}
-                  >
-                    <span className="text-sm text-text">{p.name}</span>
-                    <span className="max-w-full truncate text-xs text-text-muted">
-                      {p.path}
-                    </span>
-                  </button>
-                </li>
-              ))}
+          {recents.length === 0 ? (
+            <li className="px-2 py-1 text-sm italic text-text-muted opacity-60">
+              No recent projects
+            </li>
+          ) : (
+            recents.slice(0, 3).map((p) => (
+              <li key={p.path}>
+                <button
+                  type="button"
+                  onClick={() => void openRecent(p.path)}
+                  className="flex w-full flex-col items-start rounded-sm px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                  title={p.path}
+                >
+                  <span className="text-sm text-text">{p.name}</span>
+                  <span className="max-w-full truncate text-xs text-text-muted">
+                    {p.path}
+                  </span>
+                </button>
+              </li>
+            ))
+          )}
         </ul>
       </div>
     </section>

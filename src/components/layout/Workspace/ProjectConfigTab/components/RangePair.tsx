@@ -26,16 +26,22 @@ export function RangePair({
         min={minBounds.min}
         max={minBounds.max}
         step={step}
-        onChange={(n) => { if (n != null) onMinChange(n); }}
+        onChange={(n) => {
+          if (n != null) onMinChange(n);
+        }}
         invalid={invalid}
       />
-      <span className="text-xs uppercase tracking-wider text-text-muted">to</span>
+      <span className="text-xs uppercase tracking-wider text-text-muted">
+        to
+      </span>
       <NumberInput
         value={maxValue}
         min={maxBounds.min}
         max={maxBounds.max}
         step={step}
-        onChange={(n) => { if (n != null) onMaxChange(n); }}
+        onChange={(n) => {
+          if (n != null) onMaxChange(n);
+        }}
         invalid={invalid}
       />
     </div>

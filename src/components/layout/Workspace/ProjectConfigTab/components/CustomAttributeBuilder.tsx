@@ -6,14 +6,21 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  arrayMove,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 import { MAX_CUSTOM_ATTRIBUTES } from '../constants';
 import type { CustomAttribute } from '../types';
 
 import { CustomAttributeRow } from './CustomAttributeRow';
 
-export type CustomAttributeErrors = Record<string, { label?: string; options?: string }>;
+export type CustomAttributeErrors = Record<
+  string,
+  { label?: string; options?: string }
+>;
 
 export function CustomAttributeBuilder({
   attributes,
@@ -56,9 +63,15 @@ export function CustomAttributeBuilder({
         </span>
       </div>
       {attributes.length === 0 ? (
-        <p className="text-xs italic text-text-muted">No custom attributes yet.</p>
+        <p className="text-xs italic text-text-muted">
+          No custom attributes yet.
+        </p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={attributes.map((a) => a.id)}
             strategy={verticalListSortingStrategy}

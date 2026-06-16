@@ -22,7 +22,10 @@
     "import/internal-regex": "^@(app|electron|shared|saccades|pupil|viz)/"
   },
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/consistent-type-imports": "error",
     "import/order": [
@@ -30,7 +33,14 @@
       {
         "newlines-between": "always",
         "alphabetize": { "order": "asc", "caseInsensitive": true },
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"]
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ]
       }
     ],
     "import/no-default-export": "error",
@@ -41,7 +51,12 @@
   },
   "overrides": [
     {
-      "files": ["src/routes/**/index.tsx", "*.config.*", "vite.*.config.ts", "vite.*.config.mts"],
+      "files": [
+        "src/routes/**/index.tsx",
+        "*.config.*",
+        "vite.*.config.ts",
+        "vite.*.config.mts"
+      ],
       "rules": {
         "import/no-default-export": "off"
       }

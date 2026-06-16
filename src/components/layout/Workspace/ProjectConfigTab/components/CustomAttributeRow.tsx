@@ -2,7 +2,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
 
-
 import type { CustomAttribute, CustomAttributeType } from '../types';
 
 import { RadioGroup } from './RadioGroup';
@@ -25,7 +24,14 @@ export function CustomAttributeRow({
   onChange: (patch: Partial<CustomAttribute>) => void;
   onDelete: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: attribute.id,
   });
   const [confirming, setConfirming] = useState(false);
@@ -44,8 +50,12 @@ export function CustomAttributeRow({
         className="flex flex-col gap-2 rounded-sm border border-red-500/60 bg-bg p-2"
       >
         <p className="text-xs text-text">
-          Delete <span className="font-semibold">{attribute.label || 'this attribute'}</span>?
-          Existing participant data for this field will be permanently removed.
+          Delete{' '}
+          <span className="font-semibold">
+            {attribute.label || 'this attribute'}
+          </span>
+          ? Existing participant data for this field will be permanently
+          removed.
         </p>
         <div className="flex justify-end gap-2">
           <button
@@ -97,7 +107,9 @@ export function CustomAttributeRow({
               errors?.label ? 'border-red-500' : 'border-border'
             }`}
           />
-          {errors?.label && <span className="text-xs text-red-500">{errors.label}</span>}
+          {errors?.label && (
+            <span className="text-xs text-red-500">{errors.label}</span>
+          )}
           <RadioGroup
             name={`custom-attr-type-${attribute.id}`}
             value={attribute.type}

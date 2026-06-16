@@ -3,7 +3,10 @@ import type { ProjectConfig, ProjectConfigKey } from './types';
 
 export type FieldErrors = Partial<Record<ProjectConfigKey, string>>;
 export type FieldWarnings = Partial<Record<ProjectConfigKey, string>>;
-export type CustomAttributeErrors = Record<string, { label?: string; options?: string }>;
+export type CustomAttributeErrors = Record<
+  string,
+  { label?: string; options?: string }
+>;
 
 type Pair = {
   minKey: ProjectConfigKey;
@@ -12,11 +15,31 @@ type Pair = {
 };
 
 const ORDERED_PAIRS: Pair[] = [
-  { minKey: 'saccade_min_velocity', maxKey: 'saccade_max_velocity', label: 'Saccade velocity' },
-  { minKey: 'saccade_min_duration', maxKey: 'saccade_max_duration', label: 'Saccade duration' },
-  { minKey: 'saccade_min_amplitude', maxKey: 'saccade_max_amplitude', label: 'Saccade amplitude' },
-  { minKey: 'pupil_min_diameter', maxKey: 'pupil_max_diameter', label: 'Pupil diameter' },
-  { minKey: 'focus_min_distance', maxKey: 'focus_max_distance', label: 'Focus distance' },
+  {
+    minKey: 'saccade_min_velocity',
+    maxKey: 'saccade_max_velocity',
+    label: 'Saccade velocity',
+  },
+  {
+    minKey: 'saccade_min_duration',
+    maxKey: 'saccade_max_duration',
+    label: 'Saccade duration',
+  },
+  {
+    minKey: 'saccade_min_amplitude',
+    maxKey: 'saccade_max_amplitude',
+    label: 'Saccade amplitude',
+  },
+  {
+    minKey: 'pupil_min_diameter',
+    maxKey: 'pupil_max_diameter',
+    label: 'Pupil diameter',
+  },
+  {
+    minKey: 'focus_min_distance',
+    maxKey: 'focus_max_distance',
+    label: 'Focus distance',
+  },
 ];
 
 export function validate(config: ProjectConfig): {
@@ -39,11 +62,12 @@ export function validate(config: ProjectConfig): {
   }
 
   if (
-    Number.isFinite(config.pupil_baseline_window)
-    && Number.isFinite(config.epoch_pre_stimulus_window)
-    && config.pupil_baseline_window > config.epoch_pre_stimulus_window
+    Number.isFinite(config.pupil_baseline_window) &&
+    Number.isFinite(config.epoch_pre_stimulus_window) &&
+    config.pupil_baseline_window > config.epoch_pre_stimulus_window
   ) {
-    const msg = 'Baseline window should not exceed the pre-stimulus epoch window.';
+    const msg =
+      'Baseline window should not exceed the pre-stimulus epoch window.';
     warnings.pupil_baseline_window = msg;
     warnings.epoch_pre_stimulus_window = msg;
   }
@@ -62,8 +86,8 @@ export function validate(config: ProjectConfig): {
     if (!config.demographics_gender) {
       errors.demographics_gender = 'Gender is required.';
     } else if (
-      config.demographics_gender === 'Other'
-      && !config.demographics_gender_other.trim()
+      config.demographics_gender === 'Other' &&
+      !config.demographics_gender_other.trim()
     ) {
       errors.demographics_gender_other = 'Please specify.';
     }

@@ -14,7 +14,10 @@ export function RadioGroup({
   return (
     <div className="flex flex-wrap gap-4">
       {options.map((opt) => (
-        <label key={opt.value} className="flex cursor-pointer items-center gap-2 text-sm text-text">
+        <label
+          key={opt.value}
+          className="flex cursor-pointer items-center gap-2 text-sm text-text"
+        >
           <input
             type="radio"
             name={name}

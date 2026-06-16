@@ -45,14 +45,20 @@ export function EventField({
           type="text"
           value={event.name}
           maxLength={NAME_MAX}
-          onChange={(e) => onChange({ name: e.target.value.slice(0, NAME_MAX) })}
+          onChange={(e) =>
+            onChange({ name: e.target.value.slice(0, NAME_MAX) })
+          }
           className="w-full rounded-sm border border-border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary"
         />
       </label>
       <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-surface p-3">
         <legend className="flex items-center gap-1 px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
           Timestamp
-          <span title={hint} aria-label={hint} className="inline-flex cursor-help">
+          <span
+            title={hint}
+            aria-label={hint}
+            className="inline-flex cursor-help"
+          >
             <Info size={12} />
           </span>
         </legend>

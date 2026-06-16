@@ -1,4 +1,12 @@
-import { ChevronDown, ChevronRight, Pencil, Settings, Sparkles, Trash2, UserPlus } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Settings,
+  Sparkles,
+  Trash2,
+  UserPlus,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { casesApi } from '@app/api/cases';
@@ -74,7 +82,8 @@ function ProjectNode({
   useEffect(() => {
     if (!configOpen) return;
     const onDocClick = (e: MouseEvent) => {
-      if (!configWrapperRef.current?.contains(e.target as Node)) setConfigOpen(false);
+      if (!configWrapperRef.current?.contains(e.target as Node))
+        setConfigOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setConfigOpen(false);
@@ -217,8 +226,8 @@ function ProjectNode({
           )}
         </div>
       </div>
-      {expanded && (
-        hasMarkers || hasProjectConfig || cases.length > 0 ? (
+      {expanded &&
+        (hasMarkers || hasProjectConfig || cases.length > 0 ? (
           <>
             {(hasMarkers || hasProjectConfig) && (
               <ConfigFolder
@@ -243,8 +252,7 @@ function ProjectNode({
           <div className="px-3 py-1 text-xs italic text-text-muted opacity-70">
             This project is empty!
           </div>
-        )
-      )}
+        ))}
     </div>
   );
 }
@@ -265,7 +273,11 @@ function CasesFolder({
   onDeleteCase: (record: CaseRecord) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const [menu, setMenu] = useState<{ record: CaseRecord; x: number; y: number } | null>(null);
+  const [menu, setMenu] = useState<{
+    record: CaseRecord;
+    x: number;
+    y: number;
+  } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<CaseRecord | null>(null);
   const Chevron = expanded ? ChevronDown : ChevronRight;
   return (
@@ -302,7 +314,11 @@ function CasesFolder({
                 />
               )}
               <span className="truncate">{c.caseId}</span>
-              {incomplete && <span className="shrink-0 text-xs text-amber-400">incomplete</span>}
+              {incomplete && (
+                <span className="shrink-0 text-xs text-amber-400">
+                  incomplete
+                </span>
+              )}
             </button>
           );
         })}
@@ -471,13 +487,25 @@ function ConfigMenu({
       role="menu"
       className="absolute right-0 top-full z-50 mt-1 min-w-48 overflow-hidden rounded-md border border-border bg-surface-raised py-1 shadow-overlay"
     >
-      <ConfigMenuItem label="Create Marker Config" onClick={onCreateMarkerConfig} />
-      <ConfigMenuItem label="Create Project Config" onClick={onCreateProjectConfig} />
+      <ConfigMenuItem
+        label="Create Marker Config"
+        onClick={onCreateMarkerConfig}
+      />
+      <ConfigMenuItem
+        label="Create Project Config"
+        onClick={onCreateProjectConfig}
+      />
     </div>
   );
 }
 
-function ConfigMenuItem({ label, onClick }: { label: string; onClick: () => void }) {
+function ConfigMenuItem({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

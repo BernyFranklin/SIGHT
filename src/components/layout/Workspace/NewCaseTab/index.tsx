@@ -54,7 +54,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
             key={field.key}
             label={field.label}
             units={field.units}
-            message={errorMessage(showError(field.key) ? fieldErrors[field.key] : undefined)}
+            message={errorMessage(
+              showError(field.key) ? fieldErrors[field.key] : undefined,
+            )}
           >
             <NumberInput
               value={asNumber(demographics[field.key])}
@@ -70,10 +72,18 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
       case 'gender': {
         const value = (demographics[field.key] as string) ?? '';
         const showOther = value === 'Other';
-        const genderErr = showError(field.key) ? fieldErrors[field.key] : undefined;
-        const otherErr = showError(field.otherKey) ? fieldErrors[field.otherKey] : undefined;
+        const genderErr = showError(field.key)
+          ? fieldErrors[field.key]
+          : undefined;
+        const otherErr = showError(field.otherKey)
+          ? fieldErrors[field.otherKey]
+          : undefined;
         return (
-          <FieldRow key={field.key} label={field.label} message={errorMessage(genderErr ?? otherErr)}>
+          <FieldRow
+            key={field.key}
+            label={field.label}
+            message={errorMessage(genderErr ?? otherErr)}
+          >
             <div className="flex flex-wrap items-center gap-2">
               <Dropdown
                 value={value}
@@ -92,7 +102,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
                   maxLength={50}
                   placeholder="Please specify"
                   onBlur={() => markTouched(field.otherKey)}
-                  onChange={(e) => setDemographic(field.otherKey, e.target.value)}
+                  onChange={(e) =>
+                    setDemographic(field.otherKey, e.target.value)
+                  }
                   className={`w-48 rounded-sm border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary ${
                     otherErr ? 'border-red-500' : 'border-border'
                   }`}
@@ -105,7 +117,8 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
       case 'asrs': {
         const inatt = asNumber(demographics[field.inattentionKey]);
         const hyper = asNumber(demographics[field.hyperactivityKey]);
-        const total = inatt != null && hyper != null ? String(inatt + hyper) : null;
+        const total =
+          inatt != null && hyper != null ? String(inatt + hyper) : null;
         const inattErr = showError(field.inattentionKey)
           ? fieldErrors[field.inattentionKey]
           : undefined;
@@ -113,11 +126,18 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
           ? fieldErrors[field.hyperactivityKey]
           : undefined;
         return (
-          <div key="asrs" className="flex flex-col gap-3 rounded-sm border border-border bg-bg/40 p-3">
+          <div
+            key="asrs"
+            className="flex flex-col gap-3 rounded-sm border border-border bg-bg/40 p-3"
+          >
             <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
               {field.label}
             </span>
-            <FieldRow label="Inattention" units="score" message={errorMessage(inattErr)}>
+            <FieldRow
+              label="Inattention"
+              units="score"
+              message={errorMessage(inattErr)}
+            >
               <NumberInput
                 value={inatt}
                 min={0}
@@ -128,7 +148,11 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
                 onChange={(n) => setDemographic(field.inattentionKey, n)}
               />
             </FieldRow>
-            <FieldRow label="Hyperactivity/Impulsivity" units="score" message={errorMessage(hyperErr)}>
+            <FieldRow
+              label="Hyperactivity/Impulsivity"
+              units="score"
+              message={errorMessage(hyperErr)}
+            >
               <NumberInput
                 value={hyper}
                 min={0}
@@ -150,7 +174,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
           <FieldRow
             key={field.key}
             label={field.label}
-            message={errorMessage(showError(field.key) ? fieldErrors[field.key] : undefined)}
+            message={errorMessage(
+              showError(field.key) ? fieldErrors[field.key] : undefined,
+            )}
           >
             <NumberInput
               value={asNumber(demographics[field.key])}
@@ -168,7 +194,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
           <FieldRow
             key={field.key}
             label={field.label}
-            message={errorMessage(showError(field.key) ? fieldErrors[field.key] : undefined)}
+            message={errorMessage(
+              showError(field.key) ? fieldErrors[field.key] : undefined,
+            )}
           >
             <input
               type="text"
@@ -177,7 +205,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
               onBlur={() => markTouched(field.key)}
               onChange={(e) => setDemographic(field.key, e.target.value)}
               className={`w-full rounded-sm border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary ${
-                showError(field.key) && fieldErrors[field.key] ? 'border-red-500' : 'border-border'
+                showError(field.key) && fieldErrors[field.key]
+                  ? 'border-red-500'
+                  : 'border-border'
               }`}
             />
           </FieldRow>
@@ -187,7 +217,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
           <FieldRow
             key={field.key}
             label={field.label}
-            message={errorMessage(showError(field.key) ? fieldErrors[field.key] : undefined)}
+            message={errorMessage(
+              showError(field.key) ? fieldErrors[field.key] : undefined,
+            )}
           >
             <Dropdown
               value={(demographics[field.key] as string) ?? ''}
@@ -240,7 +272,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
           <Group title="Case">
             <FieldRow
               label="Case ID"
-              message={errorMessage(showError('caseId') ? caseIdError : undefined)}
+              message={errorMessage(
+                showError('caseId') ? caseIdError : undefined,
+              )}
             >
               <input
                 type="text"
@@ -250,7 +284,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
                 onBlur={() => markTouched('caseId')}
                 onChange={(e) => setCaseId(e.target.value)}
                 className={`w-full rounded-sm border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary ${
-                  showError('caseId') && caseIdError ? 'border-red-500' : 'border-border'
+                  showError('caseId') && caseIdError
+                    ? 'border-red-500'
+                    : 'border-border'
                 }`}
               />
             </FieldRow>
@@ -260,8 +296,10 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
                   <div className="flex flex-col rounded-sm border border-border bg-bg px-3 py-2 text-sm">
                     <span className="text-text">{existingFileName}</span>
                     <span className="text-xs text-text-muted">
-                      {existingFileSize != null ? formatSize(existingFileSize) : ''} · current file —
-                      choose a file below to replace it.
+                      {existingFileSize != null
+                        ? formatSize(existingFileSize)
+                        : ''}{' '}
+                      · current file — choose a file below to replace it.
                     </span>
                   </div>
                 )}
@@ -278,7 +316,9 @@ export function NewCaseTab({ tab }: { tab: Tab }) {
           </Group>
 
           {fields.length > 0 && (
-            <Group title="Demographic & Clinical Metadata">{fields.map(renderField)}</Group>
+            <Group title="Demographic & Clinical Metadata">
+              {fields.map(renderField)}
+            </Group>
           )}
         </div>
       </div>
@@ -296,6 +336,8 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function errorMessage(text: string | undefined): { text: string; tone: 'error' } | undefined {
+function errorMessage(
+  text: string | undefined,
+): { text: string; tone: 'error' } | undefined {
   return text ? { text, tone: 'error' } : undefined;
 }

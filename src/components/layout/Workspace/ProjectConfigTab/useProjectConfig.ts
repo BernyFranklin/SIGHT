@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { projectConfigApi, type ProjectConfigFile } from '@app/api/projectConfig';
+import {
+  projectConfigApi,
+  type ProjectConfigFile,
+} from '@app/api/projectConfig';
 import { useProjectStore } from '@app/store/useProjectStore';
 
 import { DEFAULT_CONFIG } from './constants';
@@ -26,7 +29,10 @@ function valuesEqual(a: unknown, b: unknown): boolean {
     const kb = Object.keys(b as object);
     if (ka.length !== kb.length) return false;
     return ka.every((k) =>
-      valuesEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
+      valuesEqual(
+        (a as Record<string, unknown>)[k],
+        (b as Record<string, unknown>)[k],
+      ),
     );
   }
   return false;
@@ -43,10 +49,12 @@ function configsEqual(a: ProjectConfig, b: ProjectConfig): boolean {
 function cloneConfig(c: ProjectConfig): ProjectConfig {
   return {
     ...c,
-    demographics_custom_attributes: c.demographics_custom_attributes.map((a) => ({
-      ...a,
-      options: [...a.options],
-    })),
+    demographics_custom_attributes: c.demographics_custom_attributes.map(
+      (a) => ({
+        ...a,
+        options: [...a.options],
+      }),
+    ),
   };
 }
 
@@ -62,24 +70,29 @@ function fromFile(file: ProjectConfigFile): ProjectConfig {
   return {
     ...base,
     ...(file as unknown as Partial<ProjectConfig>),
-    fixation_algorithm: (file.fixation_algorithm as FixationAlgorithm) ?? base.fixation_algorithm,
+    fixation_algorithm:
+      (file.fixation_algorithm as FixationAlgorithm) ?? base.fixation_algorithm,
     pupil_baseline_correction_method:
-      (file.pupil_baseline_correction_method as PupilBaselineCorrection)
-        ?? base.pupil_baseline_correction_method,
+      (file.pupil_baseline_correction_method as PupilBaselineCorrection) ??
+      base.pupil_baseline_correction_method,
     pupil_blink_interpolation_method:
-      (file.pupil_blink_interpolation_method as PupilBlinkInterpolation)
-        ?? base.pupil_blink_interpolation_method,
-    demographics_custom_attributes: Array.isArray(file.demographics_custom_attributes)
+      (file.pupil_blink_interpolation_method as PupilBlinkInterpolation) ??
+      base.pupil_blink_interpolation_method,
+    demographics_custom_attributes: Array.isArray(
+      file.demographics_custom_attributes,
+    )
       ? file.demographics_custom_attributes.map((a) => ({
-        ...a,
-        options: Array.isArray(a.options) ? [...a.options] : [],
-      }))
+          ...a,
+          options: Array.isArray(a.options) ? [...a.options] : [],
+        }))
       : [],
   };
 }
 
 export function useProjectConfig(projectPath: string) {
-  const [config, setConfig] = useState<ProjectConfig>(() => cloneConfig(DEFAULT_CONFIG));
+  const [config, setConfig] = useState<ProjectConfig>(() =>
+    cloneConfig(DEFAULT_CONFIG),
+  );
   const [saved, setSaved] = useState<ProjectConfig | null>(null);
   const [touched, setTouched] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -105,13 +118,20 @@ export function useProjectConfig(projectPath: string) {
     return configsEqual(saved, config) ? 'clean' : 'dirty';
   }, [saved, touched, config]);
 
-  const { errors, warnings, customAttributeErrors } = useMemo(() => validate(config), [config]);
+  const { errors, warnings, customAttributeErrors } = useMemo(
+    () => validate(config),
+    [config],
+  );
   const hasErrors =
-    Object.keys(errors).length > 0 || Object.keys(customAttributeErrors).length > 0;
+    Object.keys(errors).length > 0 ||
+    Object.keys(customAttributeErrors).length > 0;
 
   const canSave = status === 'dirty' && !hasErrors && !saving;
 
-  const setField = <K extends ProjectConfigKey>(key: K, value: ProjectConfig[K]) => {
+  const setField = <K extends ProjectConfigKey>(
+    key: K,
+    value: ProjectConfig[K],
+  ) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
     setTouched(true);
   };
@@ -127,11 +147,14 @@ export function useProjectConfig(projectPath: string) {
     setTouched(true);
   };
 
-  const updateCustomAttribute = (id: string, patch: Partial<CustomAttribute>) => {
+  const updateCustomAttribute = (
+    id: string,
+    patch: Partial<CustomAttribute>,
+  ) => {
     setConfig((prev) => ({
       ...prev,
-      demographics_custom_attributes: prev.demographics_custom_attributes.map((a) =>
-        a.id === id ? { ...a, ...patch } : a,
+      demographics_custom_attributes: prev.demographics_custom_attributes.map(
+        (a) => (a.id === id ? { ...a, ...patch } : a),
       ),
     }));
     setTouched(true);
@@ -140,9 +163,8 @@ export function useProjectConfig(projectPath: string) {
   const deleteCustomAttribute = (id: string) => {
     setConfig((prev) => ({
       ...prev,
-      demographics_custom_attributes: prev.demographics_custom_attributes.filter(
-        (a) => a.id !== id,
-      ),
+      demographics_custom_attributes:
+        prev.demographics_custom_attributes.filter((a) => a.id !== id),
     }));
     setTouched(true);
   };
@@ -157,7 +179,10 @@ export function useProjectConfig(projectPath: string) {
     const snapshot = cloneConfig(config);
     setSaving(true);
     try {
-      await projectConfigApi.write(projectPath, snapshot as unknown as ProjectConfigFile);
+      await projectConfigApi.write(
+        projectPath,
+        snapshot as unknown as ProjectConfigFile,
+      );
       setSaved(snapshot);
       setTouched(false);
       await useProjectStore.getState().refreshProjectConfig(projectPath);

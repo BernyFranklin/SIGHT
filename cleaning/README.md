@@ -17,7 +17,7 @@ conventions (columnar typed arrays, co-located Vitest tests, `@cleaning` alias).
 
 - 42 header columns, Windows (`\r\n`) line endings.
 - Several columns are **parenthesized tuples** (`(0.033, -0.007, 0.999)`) whose
-  internal commas are *not* field separators — a naïve `split(',')` mis-aligns
+  internal commas are _not_ field separators — a naïve `split(',')` mis-aligns
   every column after the first tuple. The reader tokenizes on commas outside
   parentheses and expands tuples into scalar columns (`schema.ts`).
 - `CaptureTime` is a nanosecond clock (~1.0e18, ~200 Hz). It exceeds
@@ -32,13 +32,15 @@ field/tuple arity, failing loudly with the offending row number.
 ## Outputs
 
 ### Master cleaned frame
+
 All signal columns (snake_case) + derived columns (`time_s`, `time_ms`,
 `sample_dt_ms`, and optional `gaze_azimuth_deg` / `gaze_elevation_deg`) + all
 provenance flags + a rolled-up `excluded` flag. One row per source frame.
 
 ### Three views (exact column subsets)
+
 - **Saccade** — `frame, time_s, gaze_status, combined_gaze_forward_{x,y,z},
-  gaze_valid, in_invalid_run, sample_dt_ms` (+ `gaze_azimuth_deg`,
+gaze_valid, in_invalid_run, sample_dt_ms` (+ `gaze_azimuth_deg`,
   `gaze_elevation_deg` when angle derivation is enabled).
 - **Pupillometry** — frame/time, both pupil diameters & iris ratios, validity,
   blink, pupil-bounds, asymmetry, and `interpolated_*` flags.
@@ -46,6 +48,7 @@ provenance flags + a rolled-up `excluded` flag. One row per source frame.
   validity, blink, focus sentinel/bounds/instability, and gap columns.
 
 ### QA report (`.json` + `.md`)
+
 Frame count, duration, inferred sample rate, validity ratios, gap counts/lengths,
 sentinel & out-of-bounds counts, blinks, interpolation %, exclusion %, a
 `pass`/`warn` status, and the **exact config echoed back** for reproducibility.
@@ -56,20 +59,20 @@ All thresholds live in a typed `CleaningConfig` (`config.ts`) with the spec
 defaults; see `config.example.json`. Load and override with `loadConfigFile` or
 `resolveConfig`. Key fields:
 
-| Field | Default | Meaning |
-| --- | --- | --- |
-| `min_valid_frame_ratio` | 0.75 | Warn if overall valid ratio falls below |
-| `max_consecutive_invalid_for_gap` | 5 | INVALID runs ≥ this are data gaps |
-| `max_gap_for_velocity_ms` | 25 | Gaps longer than this flagged for downstream velocity |
-| `eye_openness_blink_threshold` | 0.5 | Below → blink candidate (status-independent) |
-| `pupil_min_diameter_mm` / `pupil_max_diameter_mm` | 1.5 / 9.0 | Out → flag + NaN |
-| `pupil_lr_asymmetry_tolerance_mm` | 0.5 | \|L−R\| above → flag |
-| `pupil_interpolation_method` | `linear` | `linear` \| `cubic_spline` \| `none` |
-| `pupil_blink_max_gap_ms` | 150 | Only shorter gaps are interpolated |
-| `focus_min_distance_m` / `focus_max_distance_m` | 0.2 / 10.0 | Out → flag + NaN (`==0` → sentinel) |
-| `focus_min_stability` | 0.3 | Below → `focus_unstable` (value kept) |
-| `derive_gaze_angles` | true | Add azimuth/elevation convenience columns |
-| `inclusion_gate` | invalid-gaze + gaps | Configurable predicate rolled into `excluded` |
+| Field                                             | Default             | Meaning                                               |
+| ------------------------------------------------- | ------------------- | ----------------------------------------------------- |
+| `min_valid_frame_ratio`                           | 0.75                | Warn if overall valid ratio falls below               |
+| `max_consecutive_invalid_for_gap`                 | 5                   | INVALID runs ≥ this are data gaps                     |
+| `max_gap_for_velocity_ms`                         | 25                  | Gaps longer than this flagged for downstream velocity |
+| `eye_openness_blink_threshold`                    | 0.5                 | Below → blink candidate (status-independent)          |
+| `pupil_min_diameter_mm` / `pupil_max_diameter_mm` | 1.5 / 9.0           | Out → flag + NaN                                      |
+| `pupil_lr_asymmetry_tolerance_mm`                 | 0.5                 | \|L−R\| above → flag                                  |
+| `pupil_interpolation_method`                      | `linear`            | `linear` \| `cubic_spline` \| `none`                  |
+| `pupil_blink_max_gap_ms`                          | 150                 | Only shorter gaps are interpolated                    |
+| `focus_min_distance_m` / `focus_max_distance_m`   | 0.2 / 10.0          | Out → flag + NaN (`==0` → sentinel)                   |
+| `focus_min_stability`                             | 0.3                 | Below → `focus_unstable` (value kept)                 |
+| `derive_gaze_angles`                              | true                | Add azimuth/elevation convenience columns             |
+| `inclusion_gate`                                  | invalid-gaze + gaps | Configurable predicate rolled into `excluded`         |
 
 ## Usage
 
@@ -78,15 +81,18 @@ defaults; see `config.example.json`. Load and override with `loadConfigFile` or
 ```ts
 import { cleanRecording, resolveConfig } from '@cleaning';
 
-const result = await cleanRecording('path/to/ID.002.csv', resolveConfig({
-  pupil_interpolation_method: 'cubic_spline',
-}));
+const result = await cleanRecording(
+  'path/to/ID.002.csv',
+  resolveConfig({
+    pupil_interpolation_method: 'cubic_spline',
+  }),
+);
 
-result.frame;             // master cleaned Table
-result.saccadeView;       // per-module views
+result.frame; // master cleaned Table
+result.saccadeView; // per-module views
 result.pupillometryView;
 result.gazeQualityView;
-result.report;            // QaReport (status, counts, echoed config)
+result.report; // QaReport (status, counts, echoed config)
 await result.save('./cleaned'); // write CSVs + qa.json + qa.md
 ```
 

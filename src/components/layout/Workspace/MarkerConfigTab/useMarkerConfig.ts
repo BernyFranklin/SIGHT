@@ -6,9 +6,20 @@ import { useProjectStore } from '@app/store/useProjectStore';
 import { DEFAULT_FPS } from './constants';
 import { framesToTs, tsToFrames } from './timestamp';
 import type { Event, Fps, MarkerConfig, Status } from './types';
-import { eventsEqual, hasAnyTimestamp, isEventComplete, sortByStart, validateEvents } from './validation';
+import {
+  eventsEqual,
+  hasAnyTimestamp,
+  isEventComplete,
+  sortByStart,
+  validateEvents,
+} from './validation';
 
-const blankEvent = (id: string): Event => ({ id, name: '', startTime: '', endTime: '' });
+const blankEvent = (id: string): Event => ({
+  id,
+  name: '',
+  startTime: '',
+  endTime: '',
+});
 
 export type PendingRemove = { id: string; index: number };
 
@@ -24,7 +35,9 @@ export function useMarkerConfig(projectPath: string) {
   const [events, setEvents] = useState<Event[]>(() => [blankEvent('e0')]);
   const [saved, setSaved] = useState<MarkerConfig | null>(null);
   const [touched, setTouched] = useState(false);
-  const [pendingRemove, setPendingRemove] = useState<PendingRemove | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<PendingRemove | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,11 +53,16 @@ export function useMarkerConfig(projectPath: string) {
         startTime: framesToTs(m.startFrame, loadedFps),
         endTime: framesToTs(m.endFrame, loadedFps),
       }));
-      const seed: Event[] = loaded.length > 0 ? loaded : [blankEvent(`e${++idCounter.current}`)];
+      const seed: Event[] =
+        loaded.length > 0 ? loaded : [blankEvent(`e${++idCounter.current}`)];
       setMarkerSetNameRaw(file.name);
       setFpsRaw(loadedFps);
       setEvents(seed);
-      setSaved({ markerSetName: file.name, fps: loadedFps, events: seed.map((e) => ({ ...e })) });
+      setSaved({
+        markerSetName: file.name,
+        fps: loadedFps,
+        events: seed.map((e) => ({ ...e })),
+      });
       setTouched(false);
     })();
     return () => {
@@ -55,10 +73,11 @@ export function useMarkerConfig(projectPath: string) {
   const status: Status = useMemo(() => {
     if (!saved) return touched ? 'dirty' : 'new';
     if (
-      saved.markerSetName === markerSetName
-      && saved.fps === fps
-      && eventsEqual(saved.events, events)
-    ) return 'clean';
+      saved.markerSetName === markerSetName &&
+      saved.fps === fps &&
+      eventsEqual(saved.events, events)
+    )
+      return 'clean';
     return 'dirty';
   }, [saved, touched, markerSetName, fps, events]);
 
@@ -66,7 +85,8 @@ export function useMarkerConfig(projectPath: string) {
   const hasErrors = Object.keys(errors).length > 0;
   const allEventsComplete = events.every((e) => isEventComplete(e, fps));
 
-  const canSave = status === 'dirty' && !hasErrors && allEventsComplete && !saving;
+  const canSave =
+    status === 'dirty' && !hasErrors && allEventsComplete && !saving;
   const fpsLocked = hasAnyTimestamp(events);
 
   const markTouched = () => setTouched(true);
@@ -88,7 +108,9 @@ export function useMarkerConfig(projectPath: string) {
   };
 
   const updateEvent = (id: string, patch: Partial<Event>) => {
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+    setEvents((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+    );
     markTouched();
   };
 

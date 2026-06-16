@@ -11,7 +11,13 @@ type Props = {
   onHoverWhileAnyOpen: () => void;
 };
 
-export function MenuButton({ section, isOpen, onOpen, onClose, onHoverWhileAnyOpen }: Props) {
+export function MenuButton({
+  section,
+  isOpen,
+  onOpen,
+  onClose,
+  onHoverWhileAnyOpen,
+}: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

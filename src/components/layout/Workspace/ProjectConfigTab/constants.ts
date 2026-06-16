@@ -88,7 +88,8 @@ export const GROUPS: GroupSpec[] = [
         default: '',
         maxLength: 500,
         rows: 4,
-        placeholder: 'Briefly describe this project — purpose, stimulus, population, etc.',
+        placeholder:
+          'Briefly describe this project — purpose, stimulus, population, etc.',
       },
     ],
   },
@@ -182,7 +183,11 @@ export const GROUPS: GroupSpec[] = [
         min: 0,
         max: 360,
         step: 1,
-        dependsOn: { key: 'saccade_direction_filter_enabled', equals: true, mode: 'hidden' },
+        dependsOn: {
+          key: 'saccade_direction_filter_enabled',
+          equals: true,
+          mode: 'hidden',
+        },
       },
       {
         type: 'range-slider',
@@ -193,7 +198,11 @@ export const GROUPS: GroupSpec[] = [
         min: 5,
         max: 90,
         step: 1,
-        dependsOn: { key: 'saccade_direction_filter_enabled', equals: true, mode: 'hidden' },
+        dependsOn: {
+          key: 'saccade_direction_filter_enabled',
+          equals: true,
+          mode: 'hidden',
+        },
       },
     ],
   },
@@ -231,7 +240,11 @@ export const GROUPS: GroupSpec[] = [
         max: 3.0,
         step: 0.1,
         decimals: 1,
-        dependsOn: { key: 'fixation_algorithm', equals: 'I-DT', mode: 'dimmed' },
+        dependsOn: {
+          key: 'fixation_algorithm',
+          equals: 'I-DT',
+          mode: 'dimmed',
+        },
       },
     ],
   },
@@ -280,7 +293,11 @@ export const GROUPS: GroupSpec[] = [
         min: 50,
         max: 500,
         step: 1,
-        dependsOn: { key: 'pupil_blink_interpolation_method', equals: 'none', mode: 'dimmed' },
+        dependsOn: {
+          key: 'pupil_blink_interpolation_method',
+          equals: 'none',
+          mode: 'dimmed',
+        },
       },
       {
         type: 'range-pair',
@@ -410,7 +427,11 @@ export const GROUPS: GroupSpec[] = [
         max: 120,
         step: 1,
         nullable: true,
-        dependsOn: { key: 'demographics_age_enabled', equals: true, mode: 'dimmed' },
+        dependsOn: {
+          key: 'demographics_age_enabled',
+          equals: true,
+          mode: 'dimmed',
+        },
       },
       {
         type: 'toggle-switch',
@@ -431,7 +452,11 @@ export const GROUPS: GroupSpec[] = [
           placeholder: 'Please specify',
           maxLength: 50,
         },
-        dependsOn: { key: 'demographics_gender_enabled', equals: true, mode: 'dimmed' },
+        dependsOn: {
+          key: 'demographics_gender_enabled',
+          equals: true,
+          mode: 'dimmed',
+        },
       },
       {
         type: 'toggle-switch',
@@ -449,7 +474,11 @@ export const GROUPS: GroupSpec[] = [
         max: 36,
         step: 1,
         nullable: true,
-        dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
+        dependsOn: {
+          key: 'demographics_asrs_enabled',
+          equals: true,
+          mode: 'dimmed',
+        },
       },
       {
         type: 'number-input',
@@ -461,7 +490,11 @@ export const GROUPS: GroupSpec[] = [
         max: 36,
         step: 1,
         nullable: true,
-        dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
+        dependsOn: {
+          key: 'demographics_asrs_enabled',
+          equals: true,
+          mode: 'dimmed',
+        },
       },
       {
         type: 'read-only',
@@ -473,7 +506,11 @@ export const GROUPS: GroupSpec[] = [
           if (i == null || h == null) return null;
           return String(i + h);
         },
-        dependsOn: { key: 'demographics_asrs_enabled', equals: true, mode: 'dimmed' },
+        dependsOn: {
+          key: 'demographics_asrs_enabled',
+          equals: true,
+          mode: 'dimmed',
+        },
       },
     ],
   },

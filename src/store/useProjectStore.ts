@@ -4,7 +4,10 @@ import { casesApi } from '@app/api/cases';
 import { cleaningApi, type QaReport } from '@app/api/cleaning';
 import { markersApi } from '@app/api/markers';
 import { type Project, projectApi } from '@app/api/project';
-import { type ProjectConfigFile, projectConfigApi } from '@app/api/projectConfig';
+import {
+  type ProjectConfigFile,
+  projectConfigApi,
+} from '@app/api/projectConfig';
 import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
 
 /**
@@ -82,7 +85,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
       activePath: project.path,
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
-      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      hasProjectConfig: {
+        ...s.hasProjectConfig,
+        [project.path]: config != null,
+      },
       hasCases: { ...s.hasCases, [project.path]: casesFile != null },
       projectConfigs: { ...s.projectConfigs, [project.path]: config },
       cases: { ...s.cases, [project.path]: casesFile?.cases ?? [] },
@@ -103,7 +109,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
       activePath: project.path,
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
-      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      hasProjectConfig: {
+        ...s.hasProjectConfig,
+        [project.path]: config != null,
+      },
       hasCases: { ...s.hasCases, [project.path]: casesFile != null },
       projectConfigs: { ...s.projectConfigs, [project.path]: config },
       cases: { ...s.cases, [project.path]: casesFile?.cases ?? [] },
@@ -127,7 +136,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
       activePath: project.path,
       recents,
       hasMarkers: { ...s.hasMarkers, [project.path]: hasM },
-      hasProjectConfig: { ...s.hasProjectConfig, [project.path]: config != null },
+      hasProjectConfig: {
+        ...s.hasProjectConfig,
+        [project.path]: config != null,
+      },
       hasCases: { ...s.hasCases, [project.path]: casesFile != null },
       projectConfigs: { ...s.projectConfigs, [project.path]: config },
       cases: { ...s.cases, [project.path]: casesFile?.cases ?? [] },
@@ -214,7 +226,15 @@ export const useProjectStore = create<ProjectState>((set) => ({
       delete cleaningReports[closedPath];
       const cleaningBusy = { ...s.cleaningBusy };
       delete cleaningBusy[closedPath];
-      return { open, activePath, cases, hasCases, projectConfigs, cleaningReports, cleaningBusy };
+      return {
+        open,
+        activePath,
+        cases,
+        hasCases,
+        projectConfigs,
+        cleaningReports,
+        cleaningBusy,
+      };
     });
     const workspace = useWorkspaceStore.getState();
     workspace.tabs

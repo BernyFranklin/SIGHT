@@ -29,7 +29,9 @@ export function RangeSlider({
           [&::-moz-range-track]:h-1 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-surface-raised
           [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary"
       />
-      <span className="w-16 shrink-0 text-right font-mono text-sm tabular-nums text-text">{display}</span>
+      <span className="w-16 shrink-0 text-right font-mono text-sm tabular-nums text-text">
+        {display}
+      </span>
     </div>
   );
 }

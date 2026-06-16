@@ -32,14 +32,21 @@ export type CaseField =
     }
   | { kind: 'custom-number'; key: string; label: string }
   | { kind: 'custom-text'; key: string; label: string }
-  | { kind: 'custom-dropdown'; key: string; label: string; options: DropdownOption[] };
+  | {
+      kind: 'custom-dropdown';
+      key: string;
+      label: string;
+      options: DropdownOption[];
+    };
 
 /**
  * Build the ordered list of demographic fields to render, based on which
  * built-ins are enabled and which custom attributes are defined in the schema.
  * Returns an empty array when no demographic fields are enabled.
  */
-export function deriveCaseFields(config: ProjectConfigFile | null): CaseField[] {
+export function deriveCaseFields(
+  config: ProjectConfigFile | null,
+): CaseField[] {
   if (!config) return [];
   const fields: CaseField[] = [];
 
@@ -109,6 +116,11 @@ function isMissing(value: string | number | null | undefined): boolean {
  * required field is missing or null in the case's stored values. This makes
  * the flag reactive: enabling a new field later marks existing cases incomplete.
  */
-export function isCaseIncomplete(record: CaseRecord, config: ProjectConfigFile | null): boolean {
-  return requiredKeys(config).some((key) => isMissing(record.demographics[key]));
+export function isCaseIncomplete(
+  record: CaseRecord,
+  config: ProjectConfigFile | null,
+): boolean {
+  return requiredKeys(config).some((key) =>
+    isMissing(record.demographics[key]),
+  );
 }

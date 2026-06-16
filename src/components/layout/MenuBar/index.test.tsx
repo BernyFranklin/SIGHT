@@ -26,8 +26,12 @@ describe('MenuBar', () => {
 
   it('renders window controls', () => {
     render(<MenuBar />);
-    expect(screen.getByRole('button', { name: 'Minimize' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Maximize' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Minimize' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Maximize' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
   });
 
@@ -35,6 +39,8 @@ describe('MenuBar', () => {
     render(<MenuBar />);
     fireEvent.click(screen.getByRole('button', { name: 'File' }));
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'New Project' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: 'New Project' }),
+    ).toBeInTheDocument();
   });
 });

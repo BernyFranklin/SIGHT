@@ -10,7 +10,8 @@ import { FPS_OPTIONS, NAME_MAX, timestampHint } from './constants';
 import type { Fps } from './types';
 import { useMarkerConfig } from './useMarkerConfig';
 
-const FPS_LOCK_HINT = 'Frame rate is locked once any event timestamp has been entered. Clear timestamps to change it.';
+const FPS_LOCK_HINT =
+  'Frame rate is locked once any event timestamp has been entered. Clear timestamps to change it.';
 
 export function MarkerConfigTab({ tab }: { tab: Tab }) {
   const {
@@ -37,7 +38,12 @@ export function MarkerConfigTab({ tab }: { tab: Tab }) {
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
-      <StatusBar status={status} canSave={canSave} onSave={handleSave} onCancel={handleCancel} />
+      <StatusBar
+        status={status}
+        canSave={canSave}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      />
       <div className="flex-1 overflow-auto p-6">
         <div className="flex max-w-2xl flex-col gap-6">
           <Field label="Marker Set Name">
@@ -45,7 +51,9 @@ export function MarkerConfigTab({ tab }: { tab: Tab }) {
               type="text"
               value={markerSetName}
               maxLength={NAME_MAX}
-              onChange={(e) => setMarkerSetName(e.target.value.slice(0, NAME_MAX))}
+              onChange={(e) =>
+                setMarkerSetName(e.target.value.slice(0, NAME_MAX))
+              }
               className="w-full rounded-sm border border-border bg-bg px-2 py-1 text-sm text-text outline-none focus:border-primary"
             />
           </Field>

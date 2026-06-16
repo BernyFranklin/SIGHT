@@ -22,9 +22,9 @@ clean a case's gaze data and see the result. Nothing below is built yet.
     ```ts
     import { cleaningApi, type QaReport } from '@app/api/cleaning';
 
-    const report = await cleaningApi.run(projectPath, caseId);      // clean + persist + return QA
+    const report = await cleaningApi.run(projectPath, caseId); // clean + persist + return QA
     const existing = await cleaningApi.readReport(projectPath, caseId); // QaReport | null
-    const done = await cleaningApi.hasReport(projectPath, caseId);   // boolean
+    const done = await cleaningApi.hasReport(projectPath, caseId); // boolean
     ```
 
   - `cleaningApi.run` accepts an optional third arg: `CleaningConfigOverrides`
@@ -46,6 +46,7 @@ modules to consume later.
 ## 3. Recommended integration points (with exact files)
 
 ### 3a. Store — track cleaning per case
+
 `src/store/useProjectStore.ts` already keys everything by `projectPath` and holds
 `cases: Record<string, CaseRecord[]>`. Mirror that for cleaning:
 
@@ -58,10 +59,11 @@ modules to consume later.
   - `refreshCleaning(path, caseId)` → `cleaningApi.readReport(path, caseId)` into state.
 - **Populate lazily, not eagerly.** Unlike `cases`, do **not** run cleaning on project
   open (it's expensive). On open you may optionally `hasReport`/`readReport` to show a
-  "cleaned ✓" badge, but only *run* on explicit user action.
+  "cleaned ✓" badge, but only _run_ on explicit user action.
 - Clear a project's cleaning state in `closeActive()` alongside `cases`/`hasCases`.
 
 ### 3b. Trigger — ProjectExplorer case context menu
+
 `src/components/layout/ProjectExplorer/index.tsx` → `CaseContextMenu` (~line 333) already
 renders **Edit** / **Delete** menuitems, with `openEditCaseTab` / `deleteCase` plumbed from
 the parent (`CasesFolder`, ~line 248). Add a third menuitem **"Clean gaze data"** wired to
@@ -70,6 +72,7 @@ busy state from `cleaningBusy`. This matches the existing prop-drilling pattern
 (`onOpenCase` / `onEditCase` / `onDeleteCase`).
 
 ### 3c. Display — CaseTab "Data Quality" panel
+
 `src/components/layout/Workspace/CaseTab/index.tsx` is the read-only case surface and the
 best place to show results. It already uses `Group` / `FieldRow` / `ReadOnlyValue`
 (from `../ProjectConfigTab/components/`) and reads from `useProjectStore`. Add a
@@ -96,20 +99,20 @@ project-config stack, surfaced in `ProjectConfigTab`). A high-value follow-up is
 **mapper** `ProjectConfigFile → CleaningConfigOverrides` so cleaning honors the researcher's
 configured values:
 
-| ProjectConfigFile field | CleaningConfig field | Note |
-| --- | --- | --- |
-| `quality_min_valid_frame_ratio` | `min_valid_frame_ratio` | |
-| `quality_max_consecutive_invalid` | `max_consecutive_invalid_for_gap` | |
-| `quality_eye_openness_threshold` | `eye_openness_blink_threshold` | |
-| `pupil_min_diameter` | `pupil_min_diameter_mm` | confirm units (mm) |
-| `pupil_max_diameter` | `pupil_max_diameter_mm` | confirm units |
-| `pupil_lr_asymmetry_tolerance` | `pupil_lr_asymmetry_tolerance_mm` | confirm units |
-| `pupil_blink_interpolation_method` | `pupil_interpolation_method` | **validate value** — must be `linear`\|`cubic_spline`\|`none`; translate otherwise |
-| `pupil_blink_max_gap` | `pupil_blink_max_gap_ms` | confirm units (ms) |
-| `focus_min_distance` | `focus_min_distance_m` | confirm units (m) |
-| `focus_max_distance` | `focus_max_distance_m` | confirm units |
-| `focus_min_stability` | `focus_min_stability` | |
-| `saccade_max_gap_for_velocity` | `max_gap_for_velocity_ms` | confirm units |
+| ProjectConfigFile field            | CleaningConfig field              | Note                                                                               |
+| ---------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------- |
+| `quality_min_valid_frame_ratio`    | `min_valid_frame_ratio`           |                                                                                    |
+| `quality_max_consecutive_invalid`  | `max_consecutive_invalid_for_gap` |                                                                                    |
+| `quality_eye_openness_threshold`   | `eye_openness_blink_threshold`    |                                                                                    |
+| `pupil_min_diameter`               | `pupil_min_diameter_mm`           | confirm units (mm)                                                                 |
+| `pupil_max_diameter`               | `pupil_max_diameter_mm`           | confirm units                                                                      |
+| `pupil_lr_asymmetry_tolerance`     | `pupil_lr_asymmetry_tolerance_mm` | confirm units                                                                      |
+| `pupil_blink_interpolation_method` | `pupil_interpolation_method`      | **validate value** — must be `linear`\|`cubic_spline`\|`none`; translate otherwise |
+| `pupil_blink_max_gap`              | `pupil_blink_max_gap_ms`          | confirm units (ms)                                                                 |
+| `focus_min_distance`               | `focus_min_distance_m`            | confirm units (m)                                                                  |
+| `focus_max_distance`               | `focus_max_distance_m`            | confirm units                                                                      |
+| `focus_min_stability`              | `focus_min_stability`             |                                                                                    |
+| `saccade_max_gap_for_velocity`     | `max_gap_for_velocity_ms`         | confirm units                                                                      |
 
 Caveats: `resolveConfig` **throws** (`ConfigError`) on out-of-range/invalid values, so the
 mapper must validate (especially the interpolation method) and fall back to defaults with a

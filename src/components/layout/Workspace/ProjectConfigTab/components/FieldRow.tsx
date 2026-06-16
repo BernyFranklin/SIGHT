@@ -14,7 +14,9 @@ export function FieldRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`flex flex-col gap-1 ${dimmed ? 'pointer-events-none opacity-50' : ''}`}>
+    <div
+      className={`flex flex-col gap-1 ${dimmed ? 'pointer-events-none opacity-50' : ''}`}
+    >
       <div className="flex items-center gap-1.5 text-xs text-text-muted">
         <span>{label}</span>
         {units && <span className="text-text-muted/80">({units})</span>}

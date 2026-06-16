@@ -5,7 +5,11 @@ import type { QaReport } from '@app/api/cleaning';
 import { useProjectStore } from '@app/store/useProjectStore';
 import type { Tab } from '@app/store/useWorkspaceStore';
 
-import { type CaseField, deriveCaseFields, isCaseIncomplete } from '../NewCaseTab/schema';
+import {
+  type CaseField,
+  deriveCaseFields,
+  isCaseIncomplete,
+} from '../NewCaseTab/schema';
 import { FieldRow } from '../ProjectConfigTab/components/FieldRow';
 import { Group } from '../ProjectConfigTab/components/Group';
 import { ReadOnlyValue } from '../ProjectConfigTab/components/ReadOnlyValue';
@@ -17,7 +21,8 @@ function formatSize(bytes: number): string {
 }
 
 function toDisplay(value: string | number | null | undefined): string | null {
-  if (value == null || (typeof value === 'string' && value.trim() === '')) return null;
+  if (value == null || (typeof value === 'string' && value.trim() === ''))
+    return null;
   return String(value);
 }
 
@@ -64,7 +69,9 @@ function DataQualityPanel({
         <div className="flex flex-col gap-4">
           <StatusBadge status={report.status} />
           <FieldRow label="Valid frames" units="%">
-            <ReadOnlyValue value={(report.validity.gaze_valid_ratio * 100).toFixed(1)} />
+            <ReadOnlyValue
+              value={(report.validity.gaze_valid_ratio * 100).toFixed(1)}
+            />
           </FieldRow>
           <FieldRow label="Inferred sample rate" units="Hz">
             <ReadOnlyValue value={report.inferred_sample_rate_hz.toFixed(1)} />
@@ -119,8 +126,12 @@ export function CaseTab({ tab }: { tab: Tab }) {
   );
   const config = useProjectStore((s) => s.projectConfigs[projectPath] ?? null);
   const caseRecordId = tab.caseRecordId ?? '';
-  const report = useProjectStore((s) => s.cleaningReports[projectPath]?.[caseRecordId] ?? null);
-  const busy = useProjectStore((s) => s.cleaningBusy[projectPath]?.[caseRecordId] ?? false);
+  const report = useProjectStore(
+    (s) => s.cleaningReports[projectPath]?.[caseRecordId] ?? null,
+  );
+  const busy = useProjectStore(
+    (s) => s.cleaningBusy[projectPath]?.[caseRecordId] ?? false,
+  );
   const runCleaning = useProjectStore((s) => s.runCleaning);
   const refreshCleaning = useProjectStore((s) => s.refreshCleaning);
 
@@ -130,7 +141,9 @@ export function CaseTab({ tab }: { tab: Tab }) {
 
   if (!record) {
     return (
-      <div className="p-6 text-sm text-text-muted">This case is no longer available.</div>
+      <div className="p-6 text-sm text-text-muted">
+        This case is no longer available.
+      </div>
     );
   }
 
@@ -149,7 +162,9 @@ export function CaseTab({ tab }: { tab: Tab }) {
         const value = record.demographics[field.key];
         const other = record.demographics[field.otherKey];
         const display =
-          value === 'Other' && toDisplay(other) ? `Other — ${toDisplay(other)}` : toDisplay(value);
+          value === 'Other' && toDisplay(other)
+            ? `Other — ${toDisplay(other)}`
+            : toDisplay(value);
         return (
           <FieldRow key={field.key} label={field.label}>
             <ReadOnlyValue value={display} />
@@ -160,9 +175,14 @@ export function CaseTab({ tab }: { tab: Tab }) {
         const inatt = record.demographics[field.inattentionKey];
         const hyper = record.demographics[field.hyperactivityKey];
         const total =
-          typeof inatt === 'number' && typeof hyper === 'number' ? String(inatt + hyper) : null;
+          typeof inatt === 'number' && typeof hyper === 'number'
+            ? String(inatt + hyper)
+            : null;
         return (
-          <div key="asrs" className="flex flex-col gap-3 rounded-sm border border-border bg-bg/40 p-3">
+          <div
+            key="asrs"
+            className="flex flex-col gap-3 rounded-sm border border-border bg-bg/40 p-3"
+          >
             <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
               {field.label}
             </span>
@@ -197,7 +217,8 @@ export function CaseTab({ tab }: { tab: Tab }) {
             <div className="flex items-center gap-2 rounded-sm border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-300">
               <AlertTriangle size={14} className="shrink-0" />
               <span>
-                This case is incomplete — the project schema requires fields that have no value.
+                This case is incomplete — the project schema requires fields
+                that have no value.
               </span>
             </div>
           )}
@@ -209,13 +230,17 @@ export function CaseTab({ tab }: { tab: Tab }) {
             <FieldRow label="Gaze Data File">
               <div className="flex flex-col text-sm">
                 <span className="text-text">{record.fileName}</span>
-                <span className="text-xs text-text-muted">{formatSize(record.fileSize)}</span>
+                <span className="text-xs text-text-muted">
+                  {formatSize(record.fileSize)}
+                </span>
               </div>
             </FieldRow>
           </Group>
 
           {fields.length > 0 && (
-            <Group title="Demographic & Clinical Metadata">{fields.map(renderField)}</Group>
+            <Group title="Demographic & Clinical Metadata">
+              {fields.map(renderField)}
+            </Group>
           )}
 
           <DataQualityPanel

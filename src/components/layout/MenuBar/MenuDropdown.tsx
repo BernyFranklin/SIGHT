@@ -12,9 +12,10 @@ type Props = {
 export function MenuDropdown({ items, onSelect, side = 'bottom' }: Props) {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
-  const positionClasses = side === 'right'
-    ? 'absolute left-full top-0 ml-px'
-    : 'absolute left-0 top-full mt-px';
+  const positionClasses =
+    side === 'right'
+      ? 'absolute left-full top-0 ml-px'
+      : 'absolute left-0 top-full mt-px';
 
   return (
     <div
@@ -39,7 +40,9 @@ export function MenuDropdown({ items, onSelect, side = 'bottom' }: Props) {
               key={item.label}
               className="relative"
               onMouseEnter={() => !item.disabled && setOpenSubmenu(item.label)}
-              onMouseLeave={() => setOpenSubmenu((cur) => (cur === item.label ? null : cur))}
+              onMouseLeave={() =>
+                setOpenSubmenu((cur) => (cur === item.label ? null : cur))
+              }
             >
               <button
                 type="button"
@@ -53,7 +56,11 @@ export function MenuDropdown({ items, onSelect, side = 'bottom' }: Props) {
                 <ChevronRight size={14} className="text-text-muted" />
               </button>
               {isOpen && (
-                <MenuDropdown items={item.items} onSelect={onSelect} side="right" />
+                <MenuDropdown
+                  items={item.items}
+                  onSelect={onSelect}
+                  side="right"
+                />
               )}
             </div>
           );

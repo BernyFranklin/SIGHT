@@ -2,7 +2,10 @@ export type Status = 'new' | 'dirty' | 'clean';
 
 export type FixationAlgorithm = 'I-VT' | 'I-DT';
 
-export type PupilBaselineCorrection = 'subtraction' | 'percent_change' | 'z_score';
+export type PupilBaselineCorrection =
+  | 'subtraction'
+  | 'percent_change'
+  | 'z_score';
 
 export type PupilBlinkInterpolation = 'linear' | 'cubic_spline' | 'none';
 
@@ -98,33 +101,36 @@ type BaseSpec<K extends ProjectConfigKey> = {
   units?: string;
 };
 
-export type TextAreaSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
-  type: 'text-area';
-  default: string;
-  maxLength: number;
-  rows?: number;
-  placeholder?: string;
-};
+export type TextAreaSpec<K extends ProjectConfigKey = ProjectConfigKey> =
+  BaseSpec<K> & {
+    type: 'text-area';
+    default: string;
+    maxLength: number;
+    rows?: number;
+    placeholder?: string;
+  };
 
-export type NumberInputSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
-  type: 'number-input';
-  default: number;
-  min: number;
-  max: number;
-  step: number;
-  /** When true, an empty input commits null instead of being ignored. */
-  nullable?: boolean;
-};
+export type NumberInputSpec<K extends ProjectConfigKey = ProjectConfigKey> =
+  BaseSpec<K> & {
+    type: 'number-input';
+    default: number;
+    min: number;
+    max: number;
+    step: number;
+    /** When true, an empty input commits null instead of being ignored. */
+    nullable?: boolean;
+  };
 
-export type RangeSliderSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
-  type: 'range-slider';
-  default: number;
-  min: number;
-  max: number;
-  step: number;
-  /** Number of decimals to display in live readout. */
-  decimals?: number;
-};
+export type RangeSliderSpec<K extends ProjectConfigKey = ProjectConfigKey> =
+  BaseSpec<K> & {
+    type: 'range-slider';
+    default: number;
+    min: number;
+    max: number;
+    step: number;
+    /** Number of decimals to display in live readout. */
+    decimals?: number;
+  };
 
 export type RangePairSpec = {
   type: 'range-pair';
@@ -138,30 +144,38 @@ export type RangePairSpec = {
   decimals?: number;
 };
 
-export type RadioGroupSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
-  type: 'radio-group';
-  default: string;
-  options: RadioOption[];
-};
+export type RadioGroupSpec<K extends ProjectConfigKey = ProjectConfigKey> =
+  BaseSpec<K> & {
+    type: 'radio-group';
+    default: string;
+    options: RadioOption[];
+  };
 
-export type ToggleSwitchSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
-  type: 'toggle-switch';
-  default: boolean;
-};
+export type ToggleSwitchSpec<K extends ProjectConfigKey = ProjectConfigKey> =
+  BaseSpec<K> & {
+    type: 'toggle-switch';
+    default: boolean;
+  };
 
 export type DropdownOption = {
   value: string;
   label: string;
 };
 
-export type DropdownSpec<K extends ProjectConfigKey = ProjectConfigKey> = BaseSpec<K> & {
-  type: 'dropdown';
-  default: string;
-  options: DropdownOption[];
-  placeholder?: string;
-  /** When set, selecting this value reveals a free-text field bound to `otherKey`. */
-  otherTrigger?: { value: string; otherKey: ProjectConfigKey; placeholder?: string; maxLength?: number };
-};
+export type DropdownSpec<K extends ProjectConfigKey = ProjectConfigKey> =
+  BaseSpec<K> & {
+    type: 'dropdown';
+    default: string;
+    options: DropdownOption[];
+    placeholder?: string;
+    /** When set, selecting this value reveals a free-text field bound to `otherKey`. */
+    otherTrigger?: {
+      value: string;
+      otherKey: ProjectConfigKey;
+      placeholder?: string;
+      maxLength?: number;
+    };
+  };
 
 export type ReadOnlySpec = {
   type: 'read-only';

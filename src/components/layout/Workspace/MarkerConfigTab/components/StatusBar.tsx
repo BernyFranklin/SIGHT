@@ -24,7 +24,9 @@ export function StatusBar({
   const { bg, text } = statusStyles(status);
   const message = messages[status];
   return (
-    <div className={`flex shrink-0 items-center gap-3 border-b border-border px-4 py-2 ${bg}`}>
+    <div
+      className={`flex shrink-0 items-center gap-3 border-b border-border px-4 py-2 ${bg}`}
+    >
       <span className={`flex-1 text-sm ${text}`}>{message}</span>
       <button
         type="button"

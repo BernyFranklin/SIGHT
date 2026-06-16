@@ -1,7 +1,10 @@
 import { tsToFrames } from './timestamp';
 import type { Event, EventError, Fps } from './types';
 
-export function validateEvents(events: Event[], fps: Fps): Record<string, EventError> {
+export function validateEvents(
+  events: Event[],
+  fps: Fps,
+): Record<string, EventError> {
   const errors: Record<string, EventError> = {};
   const ranges: { id: string; start: number; end: number }[] = [];
 
@@ -9,7 +12,8 @@ export function validateEvents(events: Event[], fps: Fps): Record<string, EventE
     const err: EventError = {};
     const start = tsToFrames(e.startTime, fps);
     const end = tsToFrames(e.endTime, fps);
-    if (e.startTime !== '' && start === null) err.startTime = 'Incomplete timestamp.';
+    if (e.startTime !== '' && start === null)
+      err.startTime = 'Incomplete timestamp.';
     if (e.endTime !== '' && end === null) err.endTime = 'Incomplete timestamp.';
     if (start !== null && end !== null) {
       if (end <= start) err.endTime = 'End time must be after start time.';
@@ -22,7 +26,10 @@ export function validateEvents(events: Event[], fps: Fps): Record<string, EventE
   for (let i = 1; i < ranges.length; i += 1) {
     if (ranges[i].start < ranges[i - 1].end) {
       const id = ranges[i].id;
-      errors[id] = { ...(errors[id] ?? {}), overlap: 'Overlaps another event.' };
+      errors[id] = {
+        ...(errors[id] ?? {}),
+        overlap: 'Overlaps another event.',
+      };
     }
   }
 
@@ -31,22 +38,27 @@ export function validateEvents(events: Event[], fps: Fps): Record<string, EventE
 
 export function sortByStart(events: Event[], fps: Fps): Event[] {
   return [...events].sort(
-    (a, b) => (tsToFrames(a.startTime, fps) ?? 0) - (tsToFrames(b.startTime, fps) ?? 0),
+    (a, b) =>
+      (tsToFrames(a.startTime, fps) ?? 0) - (tsToFrames(b.startTime, fps) ?? 0),
   );
 }
 
 export function eventsEqual(a: Event[], b: Event[]): boolean {
   return (
-    a.length === b.length
-    && a.every((e, i) =>
-      e.name === b[i].name
-      && e.startTime === b[i].startTime
-      && e.endTime === b[i].endTime)
+    a.length === b.length &&
+    a.every(
+      (e, i) =>
+        e.name === b[i].name &&
+        e.startTime === b[i].startTime &&
+        e.endTime === b[i].endTime,
+    )
   );
 }
 
 export function isEventComplete(e: Event, fps: Fps): boolean {
-  return tsToFrames(e.startTime, fps) !== null && tsToFrames(e.endTime, fps) !== null;
+  return (
+    tsToFrames(e.startTime, fps) !== null && tsToFrames(e.endTime, fps) !== null
+  );
 }
 
 export function hasAnyTimestamp(events: Event[]): boolean {
