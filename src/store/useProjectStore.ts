@@ -8,6 +8,7 @@ import {
   type ProjectConfigFile,
   projectConfigApi,
 } from '@app/api/projectConfig';
+import { saccadeApi, type SaccadeReport } from '@app/api/saccade';
 import { useWorkspaceStore } from '@app/store/useWorkspaceStore';
 
 /**
@@ -36,6 +37,8 @@ interface ProjectState {
   cases: Record<string, CaseRecord[]>;
   cleaningReports: Record<string, Record<string, QaReport | null>>;
   cleaningBusy: Record<string, Record<string, boolean>>;
+  saccadeReports: Record<string, Record<string, SaccadeReport | null>>;
+  saccadeBusy: Record<string, Record<string, boolean>>;
   loadRecents: () => Promise<void>;
   createProject: () => Promise<void>;
   openProject: () => Promise<void>;
@@ -45,6 +48,8 @@ interface ProjectState {
   refreshCases: (path: string) => Promise<void>;
   runCleaning: (path: string, caseId: string) => Promise<void>;
   refreshCleaning: (path: string, caseId: string) => Promise<void>;
+  runSaccade: (path: string, caseId: string) => Promise<void>;
+  refreshSaccade: (path: string, caseId: string) => Promise<void>;
   setActive: (path: string) => void;
   closeActive: () => void;
 }
@@ -65,6 +70,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
   cases: {},
   cleaningReports: {},
   cleaningBusy: {},
+  saccadeReports: {},
+  saccadeBusy: {},
 
   loadRecents: async () => {
     const recents = await projectApi.listRecent();
@@ -208,6 +215,47 @@ export const useProjectStore = create<ProjectState>((set) => ({
     }
   },
 
+  runSaccade: async (path, caseId) => {
+    set((s) => ({
+      saccadeBusy: {
+        ...s.saccadeBusy,
+        [path]: { ...s.saccadeBusy[path], [caseId]: true },
+      },
+    }));
+    try {
+      const report = await saccadeApi.run(path, caseId);
+      set((s) => ({
+        saccadeReports: {
+          ...s.saccadeReports,
+          [path]: { ...s.saccadeReports[path], [caseId]: report },
+        },
+      }));
+    } catch (err) {
+      console.error('[useProjectStore] failed to analyze saccades', err);
+    } finally {
+      set((s) => ({
+        saccadeBusy: {
+          ...s.saccadeBusy,
+          [path]: { ...s.saccadeBusy[path], [caseId]: false },
+        },
+      }));
+    }
+  },
+
+  refreshSaccade: async (path, caseId) => {
+    try {
+      const report = await saccadeApi.readReport(path, caseId);
+      set((s) => ({
+        saccadeReports: {
+          ...s.saccadeReports,
+          [path]: { ...s.saccadeReports[path], [caseId]: report },
+        },
+      }));
+    } catch (err) {
+      console.error('[useProjectStore] failed to read saccade report', err);
+    }
+  },
+
   setActive: (path) => set({ activePath: path }),
 
   closeActive: () => {
@@ -226,6 +274,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
       delete cleaningReports[closedPath];
       const cleaningBusy = { ...s.cleaningBusy };
       delete cleaningBusy[closedPath];
+      const saccadeReports = { ...s.saccadeReports };
+      delete saccadeReports[closedPath];
+      const saccadeBusy = { ...s.saccadeBusy };
+      delete saccadeBusy[closedPath];
       return {
         open,
         activePath,
@@ -234,6 +286,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
         projectConfigs,
         cleaningReports,
         cleaningBusy,
+        saccadeReports,
+        saccadeBusy,
       };
     });
     const workspace = useWorkspaceStore.getState();

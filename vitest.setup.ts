@@ -12,4 +12,5 @@ import '@testing-library/jest-dom/vitest';
   projectConfig: {},
   cases: {},
   cleaning: {},
+  saccade: {},
 };

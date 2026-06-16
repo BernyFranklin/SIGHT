@@ -18,6 +18,7 @@
       "@app/*": ["./src/*"],
       "@electron/*": ["./electron/*"],
       "@shared/*": ["./shared/*"],
+      "@saccades": ["./saccades/index.ts"],
       "@saccades/*": ["./saccades/*"],
       "@pupil/*": ["./pupil/*"],
       "@viz/*": ["./viz/*"],

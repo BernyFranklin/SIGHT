@@ -6,6 +6,7 @@ import type {
   MarkersApi,
   ProjectApi,
   ProjectConfigApi,
+  SaccadeApi,
   WindowControlsApi,
 } from '@electron/preload';
 
@@ -18,6 +19,7 @@ declare global {
       projectConfig: ProjectConfigApi;
       cases: CasesApi;
       cleaning: CleaningApi;
+      saccade: SaccadeApi;
     };
   }
 }

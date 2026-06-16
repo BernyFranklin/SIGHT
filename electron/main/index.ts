@@ -9,6 +9,7 @@ import { registerCleaningIpc } from '../ipc/cleaning';
 import { registerMarkersIpc } from '../ipc/markers';
 import { registerProjectIpc } from '../ipc/project';
 import { registerProjectConfigIpc } from '../ipc/projectConfig';
+import { registerSaccadeIpc } from '../ipc/saccade';
 
 if (started) {
   app.quit();
@@ -67,6 +68,7 @@ registerMarkersIpc(ipcMain);
 registerProjectConfigIpc(ipcMain);
 registerCasesIpc(ipcMain);
 registerCleaningIpc(ipcMain);
+registerSaccadeIpc(ipcMain);
 
 app.on('ready', createWindow);
 

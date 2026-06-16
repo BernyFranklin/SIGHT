@@ -24,6 +24,9 @@ export const IpcChannels = {
   cleaningRun: 'cleaning:run',
   cleaningReadReport: 'cleaning:read-report',
   cleaningHasReport: 'cleaning:has-report',
+  saccadeRun: 'saccade:run',
+  saccadeReadReport: 'saccade:read-report',
+  saccadeHasReport: 'saccade:has-report',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

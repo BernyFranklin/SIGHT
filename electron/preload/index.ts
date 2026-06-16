@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 import type { CleaningConfigOverrides, QaReport } from '@cleaning';
+import type { SaccadeReport } from '@saccades';
 
 import { IpcChannels } from '../ipc';
 
@@ -170,6 +171,18 @@ const cleaning = {
     ipcRenderer.invoke(IpcChannels.cleaningHasReport, projectPath, id),
 };
 
+const saccade = {
+  run: (projectPath: string, id: string): Promise<SaccadeReport> =>
+    ipcRenderer.invoke(IpcChannels.saccadeRun, projectPath, id),
+  readReport: (
+    projectPath: string,
+    id: string,
+  ): Promise<SaccadeReport | null> =>
+    ipcRenderer.invoke(IpcChannels.saccadeReadReport, projectPath, id),
+  hasReport: (projectPath: string, id: string): Promise<boolean> =>
+    ipcRenderer.invoke(IpcChannels.saccadeHasReport, projectPath, id),
+};
+
 contextBridge.exposeInMainWorld('api', {
   windowControls,
   project,
@@ -177,9 +190,11 @@ contextBridge.exposeInMainWorld('api', {
   projectConfig,
   cases,
   cleaning,
+  saccade,
 });
 
 export type { CleaningConfigOverrides, QaReport } from '@cleaning';
+export type { SaccadeReport } from '@saccades';
 
 export type WindowControlsApi = typeof windowControls;
 export type ProjectApi = typeof project;
@@ -187,3 +202,4 @@ export type MarkersApi = typeof markers;
 export type ProjectConfigApi = typeof projectConfig;
 export type CasesApi = typeof cases;
 export type CleaningApi = typeof cleaning;
+export type SaccadeApi = typeof saccade;
