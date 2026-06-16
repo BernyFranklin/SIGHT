@@ -2,6 +2,7 @@ import { AlertTriangle } from 'lucide-react';
 import { useEffect } from 'react';
 
 import type { QaReport } from '@app/api/cleaning';
+import type { SaccadeReport } from '@app/api/saccade';
 import { useProjectStore } from '@app/store/useProjectStore';
 import type { Tab } from '@app/store/useWorkspaceStore';
 
@@ -26,23 +27,27 @@ function toDisplay(value: string | number | null | undefined): string | null {
   return String(value);
 }
 
-function CleanButton({
+function BusyButton({
   label,
+  busyLabel,
   busy,
+  disabled = false,
   onClick,
 }: {
   label: string;
+  busyLabel: string;
   busy: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={busy}
+      disabled={busy || disabled}
       className="inline-flex h-8 w-fit items-center rounded-sm border border-border bg-bg/40 px-3 text-sm text-text transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {busy ? 'Cleaning…' : label}
+      {busy ? busyLabel : label}
     </button>
   );
 }
@@ -63,7 +68,12 @@ function DataQualityPanel({
           <span className="text-sm text-text-muted">
             This case&apos;s gaze data has not been cleaned yet.
           </span>
-          <CleanButton label="Clean gaze data" busy={busy} onClick={onClean} />
+          <BusyButton
+            label="Clean gaze data"
+            busyLabel="Cleaning…"
+            busy={busy}
+            onClick={onClean}
+          />
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -98,14 +108,99 @@ function DataQualityPanel({
               </ul>
             )}
           </div>
-          <CleanButton label="Re-clean" busy={busy} onClick={onClean} />
+          <BusyButton
+            label="Re-clean"
+            busyLabel="Cleaning…"
+            busy={busy}
+            onClick={onClean}
+          />
         </div>
       )}
     </Group>
   );
 }
 
-function StatusBadge({ status }: { status: QaReport['status'] }) {
+function SaccadeAnalysisPanel({
+  report,
+  busy,
+  cleaned,
+  onRun,
+}: {
+  report: SaccadeReport | null;
+  busy: boolean;
+  cleaned: boolean;
+  onRun: () => void;
+}) {
+  return (
+    <Group title="Saccade Analysis">
+      {!cleaned ? (
+        <span className="text-sm text-text-muted">
+          Clean this case&apos;s gaze data first to run saccade analysis.
+        </span>
+      ) : report == null ? (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm text-text-muted">
+            Saccades have not been analyzed for this case yet.
+          </span>
+          <BusyButton
+            label="Run saccade analysis"
+            busyLabel="Analyzing…"
+            busy={busy}
+            onClick={onRun}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <StatusBadge status={report.status} />
+          <FieldRow label="Saccades detected">
+            <ReadOnlyValue value={String(report.saccade_count)} />
+          </FieldRow>
+          <FieldRow label="Analyzed frames">
+            <ReadOnlyValue
+              value={`${report.analyzed_frames} / ${report.total_frames}`}
+            />
+          </FieldRow>
+          <FieldRow label="Sample rate" units="Hz">
+            <ReadOnlyValue value={report.sampling_rate_hz.toFixed(1)} />
+          </FieldRow>
+          <FieldRow label="Mean amplitude" units="°">
+            <ReadOnlyValue value={report.amplitude_deg.mean.toFixed(1)} />
+          </FieldRow>
+          <FieldRow label="Median amplitude" units="°">
+            <ReadOnlyValue value={report.amplitude_deg.median.toFixed(1)} />
+          </FieldRow>
+          <FieldRow label="Peak velocity range" units="°/s">
+            <ReadOnlyValue
+              value={`${report.peak_velocity_deg_s.min.toFixed(0)} – ${report.peak_velocity_deg_s.max.toFixed(0)}`}
+            />
+          </FieldRow>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-text-muted">Warnings</span>
+            {report.warnings.length === 0 ? (
+              <span className="text-sm text-text-muted">No warnings.</span>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {report.warnings.map((w, i) => (
+                  <li key={i} className="text-sm text-amber-400">
+                    {w}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <BusyButton
+            label="Re-run"
+            busyLabel="Analyzing…"
+            busy={busy}
+            onClick={onRun}
+          />
+        </div>
+      )}
+    </Group>
+  );
+}
+
+function StatusBadge({ status }: { status: 'pass' | 'warn' | 'ok' }) {
   const isWarn = status === 'warn';
   const classes = isWarn
     ? 'border-amber-500/50 bg-amber-500/10 text-amber-300'
@@ -134,10 +229,20 @@ export function CaseTab({ tab }: { tab: Tab }) {
   );
   const runCleaning = useProjectStore((s) => s.runCleaning);
   const refreshCleaning = useProjectStore((s) => s.refreshCleaning);
+  const saccadeReport = useProjectStore(
+    (s) => s.saccadeReports[projectPath]?.[caseRecordId] ?? null,
+  );
+  const saccadeBusy = useProjectStore(
+    (s) => s.saccadeBusy[projectPath]?.[caseRecordId] ?? false,
+  );
+  const runSaccade = useProjectStore((s) => s.runSaccade);
+  const refreshSaccade = useProjectStore((s) => s.refreshSaccade);
 
   useEffect(() => {
-    if (projectPath && caseRecordId) refreshCleaning(projectPath, caseRecordId);
-  }, [projectPath, caseRecordId, refreshCleaning]);
+    if (!projectPath || !caseRecordId) return;
+    refreshCleaning(projectPath, caseRecordId);
+    refreshSaccade(projectPath, caseRecordId);
+  }, [projectPath, caseRecordId, refreshCleaning, refreshSaccade]);
 
   if (!record) {
     return (
@@ -247,6 +352,13 @@ export function CaseTab({ tab }: { tab: Tab }) {
             report={report}
             busy={busy}
             onClean={() => runCleaning(projectPath, record.id)}
+          />
+
+          <SaccadeAnalysisPanel
+            report={saccadeReport}
+            busy={saccadeBusy}
+            cleaned={report != null}
+            onRun={() => runSaccade(projectPath, record.id)}
           />
         </div>
       </div>
