@@ -29,3 +29,27 @@
   --font-mono:
     ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
 }
+
+/* Light theme overrides — applied when <html data-theme="light">. The selector
+   outranks the :root defaults emitted by @theme, so every color utility picks
+   up these values at runtime without per-component changes. */
+:root[data-theme='light'] {
+  --color-bg: oklch(0.98 0.005 295);
+  --color-surface: oklch(0.95 0.01 295);
+  --color-surface-raised: oklch(0.99 0.006 295);
+  --color-border: oklch(0.86 0.02 295);
+
+  --color-text: oklch(0.22 0.03 295);
+  --color-text-muted: oklch(0.48 0.03 295);
+
+  --color-primary: oklch(0.55 0.2 295);
+  --color-primary-hover: oklch(0.48 0.2 295);
+  --color-accent: oklch(0.6 0.16 200);
+
+  --color-success: oklch(0.6 0.17 145);
+  --color-warning: oklch(0.7 0.16 85);
+  --color-danger: oklch(0.55 0.22 25);
+
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+  --shadow-overlay: 0 10px 30px -10px rgb(0 0 0 / 0.2);
+}
