@@ -94,6 +94,45 @@ function parseNum(value: string, row: number, name: string): number {
   return n;
 }
 
+/**
+ * Parse a nanosecond timestamp token into a BigInt. The exporter usually writes
+ * a plain integer, but some rows arrive in scientific or decimal notation (e.g.
+ * `1.00001E+18`) which `BigInt()` rejects outright. Expand the mantissa and
+ * exponent into an integer literal by hand so those rows load instead of
+ * crashing the whole run. Any fractional remainder is truncated toward zero —
+ * scientific notation has already discarded sub-significant-digit precision in
+ * the file itself, so there is nothing finer to preserve.
+ */
+function parseTimestamp(value: string, row: number, name: string): bigint {
+  const t = value.trim();
+  if (t === '')
+    throw new VarjoParseError(
+      `row ${row}: timestamp column "${name}" is empty`,
+    );
+  if (/^[+-]?\d+$/.test(t)) return BigInt(t);
+
+  const m = /^([+-]?)(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/.exec(t);
+  if (!m || (m[2] === '' && (m[3] === undefined || m[3] === ''))) {
+    throw new VarjoParseError(
+      `row ${row}: timestamp column "${name}" is not an integer: "${value}"`,
+    );
+  }
+  const sign = m[1] === '-' ? '-' : '';
+  const fracPart = m[3] ?? '';
+  const digits = (m[2] ?? '') + fracPart;
+  const shift = (m[4] ? parseInt(m[4], 10) : 0) - fracPart.length;
+
+  let out: string;
+  if (shift >= 0) {
+    out = digits + '0'.repeat(shift);
+  } else {
+    const keep = digits.length + shift;
+    out = keep > 0 ? digits.slice(0, keep) : '0';
+  }
+  out = out.replace(/^0+(?=\d)/, '');
+  return BigInt(`${sign}${out === '' ? '0' : out}`);
+}
+
 /** Normalize raw CSV text into lines, stripping a BOM and trailing blank line. */
 function splitLines(text: string): string[] {
   const clean = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
@@ -182,15 +221,9 @@ export function parseVarjoCsv(text: string): Table {
         case 'str':
           target.arr[row] = token.trim();
           break;
-        case 'bigint': {
-          const t = token.trim();
-          if (t === '')
-            throw new VarjoParseError(
-              `row ${row}: timestamp column "${target.name}" is empty`,
-            );
-          target.arr[row] = BigInt(t);
+        case 'bigint':
+          target.arr[row] = parseTimestamp(token, row, target.name);
           break;
-        }
         case 'tuple': {
           if (token.trim() === '') {
             // INVALID frames write tuple signals as empty fields — treat as missing.

@@ -82,6 +82,19 @@ describe('parseVarjoCsv', () => {
     expect(capture[1] - capture[0]).toBe(5020100n);
   });
 
+  it('parses a CaptureTime written in scientific notation', () => {
+    // Some exports emit the nanosecond clock as e.g. `1.00001E+18`, which
+    // BigInt() rejects; the parser must expand it to a plain integer.
+    const sciRow = ROW1.replace('1000003884631745500', '1.00001E+18');
+    const table = parseVarjoCsv(crlf(HEADER, sciRow));
+    expect(getBigInt(table, 'capture_time')[0]).toBe(1000010000000000000n);
+  });
+
+  it('throws on a non-integer CaptureTime token', () => {
+    const bad = ROW1.replace('1000003884631745500', 'oops');
+    expect(() => parseVarjoCsv(crlf(HEADER, bad))).toThrow(/not an integer/);
+  });
+
   it('parses multiple rows with mixed status', () => {
     const table = parseVarjoCsv(crlf(HEADER, ROW1, ROW2));
     expect(table.numRows).toBe(2);
