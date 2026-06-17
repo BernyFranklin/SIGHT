@@ -80,8 +80,9 @@ function ThemeContextMenu({
     <div
       ref={ref}
       role="menu"
-      // Anchor above the cursor since the footer sits at the bottom of the window.
-      style={{ left: x, bottom: window.innerHeight - y }}
+      // Anchor to the bottom-right of the cursor: the toggle sits in the
+      // bottom-right corner, so grow the menu up and to the left to stay on-screen.
+      style={{ right: window.innerWidth - x, bottom: window.innerHeight - y }}
       className="fixed z-50 min-w-40 overflow-hidden rounded-md border border-border bg-surface-raised py-1 shadow-overlay"
     >
       {options.map(({ value, label, icon: Icon }) => (
