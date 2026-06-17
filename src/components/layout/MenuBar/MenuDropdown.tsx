@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+import { Check, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 import type { MenuItem } from './menuConfig';
@@ -76,9 +76,15 @@ export function MenuDropdown({ items, onSelect, side = 'bottom' }: Props) {
               item.onSelect?.();
               onSelect();
             }}
-            className="flex w-full items-center px-3 py-1.5 text-left text-sm text-text transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-text transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {item.label}
+            {item.checked !== undefined && (
+              <Check
+                size={14}
+                className={`shrink-0 ${item.checked ? 'text-text' : 'text-transparent'}`}
+              />
+            )}
+            <span>{item.label}</span>
           </button>
         );
       })}

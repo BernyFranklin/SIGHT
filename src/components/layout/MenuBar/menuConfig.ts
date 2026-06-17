@@ -1,7 +1,14 @@
 import { useProjectStore } from '@app/store/useProjectStore';
+import { useThemeStore } from '@app/store/useThemeStore';
 
 export type MenuItem =
-  | { kind: 'item'; label: string; onSelect?: () => void; disabled?: boolean }
+  | {
+      kind: 'item';
+      label: string;
+      onSelect?: () => void;
+      disabled?: boolean;
+      checked?: boolean;
+    }
   | { kind: 'submenu'; label: string; items: MenuItem[]; disabled?: boolean }
   | { kind: 'separator' };
 
@@ -15,43 +22,6 @@ export type MenuSection = {
 const log = (label: string) => () => console.info(`[menu] ${label}`);
 
 const staticSections: MenuSection[] = [
-  {
-    id: 'view',
-    label: 'View',
-    items: [
-      {
-        kind: 'item',
-        label: 'Toggle Timeline',
-        onSelect: log('View > Toggle Timeline'),
-      },
-      {
-        kind: 'item',
-        label: 'Toggle Scene Viewer',
-        onSelect: log('View > Toggle Scene Viewer'),
-      },
-      {
-        kind: 'item',
-        label: 'Toggle Inspector',
-        onSelect: log('View > Toggle Inspector'),
-      },
-      { kind: 'separator' },
-      { kind: 'item', label: 'Zoom In', onSelect: log('View > Zoom In') },
-      { kind: 'item', label: 'Zoom Out', onSelect: log('View > Zoom Out') },
-      { kind: 'item', label: 'Reset Zoom', onSelect: log('View > Reset Zoom') },
-      { kind: 'separator' },
-      {
-        kind: 'item',
-        label: 'Toggle Full Screen',
-        onSelect: log('View > Toggle Full Screen'),
-      },
-      { kind: 'separator' },
-      {
-        kind: 'item',
-        label: 'Toggle DevTools',
-        onSelect: () => window.api?.windowControls.toggleDevTools(),
-      },
-    ],
-  },
   {
     id: 'analysis',
     label: 'Analysis',
@@ -140,6 +110,65 @@ export function useMenuSections(): MenuSection[] {
   const closeActive = useProjectStore((s) => s.closeActive);
   const recents = useProjectStore((s) => s.recents);
   const hasOpenProjects = useProjectStore((s) => s.open.length > 0);
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
+
+  const viewSection: MenuSection = {
+    id: 'view',
+    label: 'View',
+    items: [
+      {
+        kind: 'item',
+        label: 'Toggle Timeline',
+        onSelect: log('View > Toggle Timeline'),
+      },
+      {
+        kind: 'item',
+        label: 'Toggle Scene Viewer',
+        onSelect: log('View > Toggle Scene Viewer'),
+      },
+      {
+        kind: 'item',
+        label: 'Toggle Inspector',
+        onSelect: log('View > Toggle Inspector'),
+      },
+      { kind: 'separator' },
+      {
+        kind: 'submenu',
+        label: 'Appearance',
+        items: [
+          {
+            kind: 'item',
+            label: 'Light Mode',
+            checked: theme === 'light',
+            onSelect: () => setTheme('light'),
+          },
+          {
+            kind: 'item',
+            label: 'Dark Mode',
+            checked: theme === 'dark',
+            onSelect: () => setTheme('dark'),
+          },
+        ],
+      },
+      { kind: 'separator' },
+      { kind: 'item', label: 'Zoom In', onSelect: log('View > Zoom In') },
+      { kind: 'item', label: 'Zoom Out', onSelect: log('View > Zoom Out') },
+      { kind: 'item', label: 'Reset Zoom', onSelect: log('View > Reset Zoom') },
+      { kind: 'separator' },
+      {
+        kind: 'item',
+        label: 'Toggle Full Screen',
+        onSelect: log('View > Toggle Full Screen'),
+      },
+      { kind: 'separator' },
+      {
+        kind: 'item',
+        label: 'Toggle DevTools',
+        onSelect: () => window.api?.windowControls.toggleDevTools(),
+      },
+    ],
+  };
 
   const recentItems: MenuItem[] =
     recents.length === 0
@@ -186,5 +215,5 @@ export function useMenuSections(): MenuSection[] {
     ],
   };
 
-  return [fileSection, ...staticSections];
+  return [fileSection, viewSection, ...staticSections];
 }
