@@ -143,6 +143,21 @@ describe('parseVarjoCsv', () => {
       /expected 25 fields/,
     );
   });
+
+  it('tolerates spurious trailing empty fields from extra commas', () => {
+    // Observed in the wild: some rows end with extra commas (e.g. `…,0,,,,`).
+    const table = parseVarjoCsv(crlf(HEADER, ROW1 + ',,,,'));
+    expect(table.numRows).toBe(1);
+    expect(getNum(table, 'frame')[0]).toBe(725152);
+    expect(getNum(table, 'focus_stability')[0]).toBe(0);
+  });
+
+  it('still throws when a beyond-schema trailing field carries data', () => {
+    // A non-empty extra field is real layout drift, not a stray comma.
+    expect(() => parseVarjoCsv(crlf(HEADER, ROW1 + ',,,7'))).toThrow(
+      /expected 25 fields/,
+    );
+  });
 });
 
 describe('parseVarjoCsv on the committed real slice', () => {

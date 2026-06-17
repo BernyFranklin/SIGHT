@@ -206,6 +206,15 @@ export function parseVarjoCsv(text: string): Table {
   for (let row = 0; row < numRows; row++) {
     const line = lines[row + 1];
     const tokens = tokenizeLine(line);
+    // Some exports append spurious trailing empty fields (extra commas at the
+    // end of a row). Drop those, but only when empty — any beyond-schema field
+    // that actually carries data is real layout drift and must still fail loudly.
+    while (
+      tokens.length > RAW_LAYOUT.length &&
+      tokens[tokens.length - 1].trim() === ''
+    ) {
+      tokens.pop();
+    }
     if (tokens.length !== RAW_LAYOUT.length) {
       throw new VarjoParseError(
         `row ${row}: expected ${RAW_LAYOUT.length} fields, got ${tokens.length}`,
