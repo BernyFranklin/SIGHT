@@ -8,6 +8,7 @@ import type {
   ProjectConfigApi,
   SaccadeApi,
   WindowControlsApi,
+  ZoomApi,
 } from '@electron/preload';
 
 declare global {
@@ -20,6 +21,7 @@ declare global {
       cases: CasesApi;
       cleaning: CleaningApi;
       saccade: SaccadeApi;
+      zoom: ZoomApi;
     };
   }
 }

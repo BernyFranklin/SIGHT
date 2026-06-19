@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import path from 'node:path';
 
 import started from 'electron-squirrel-startup';
@@ -16,6 +16,11 @@ if (started) {
 }
 
 const createWindow = () => {
+  // The app uses a custom in-app menu bar, so drop Electron's default menu.
+  // It otherwise owns the zoom accelerators (binding Zoom In to Ctrl+Plus, not
+  // Ctrl+=), which we now handle ourselves in the renderer.
+  Menu.setApplicationMenu(null);
+
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,

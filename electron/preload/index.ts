@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webFrame } from 'electron';
 
 import type { CleaningConfigOverrides, QaReport } from '@cleaning';
 import type { SaccadeReport } from '@saccades';
@@ -183,6 +183,11 @@ const saccade = {
     ipcRenderer.invoke(IpcChannels.saccadeHasReport, projectPath, id),
 };
 
+const zoom = {
+  set: (factor: number): void => webFrame.setZoomFactor(factor),
+  get: (): number => webFrame.getZoomFactor(),
+};
+
 contextBridge.exposeInMainWorld('api', {
   windowControls,
   project,
@@ -191,6 +196,7 @@ contextBridge.exposeInMainWorld('api', {
   cases,
   cleaning,
   saccade,
+  zoom,
 });
 
 export type { CleaningConfigOverrides, QaReport } from '@cleaning';
@@ -203,3 +209,4 @@ export type ProjectConfigApi = typeof projectConfig;
 export type CasesApi = typeof cases;
 export type CleaningApi = typeof cleaning;
 export type SaccadeApi = typeof saccade;
+export type ZoomApi = typeof zoom;
