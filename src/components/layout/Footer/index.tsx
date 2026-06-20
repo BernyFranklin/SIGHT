@@ -1,7 +1,8 @@
-import { Check, Moon, Sun } from 'lucide-react';
+import { Check, Moon, Sun, ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useThemeStore, type Theme } from '@app/store/useThemeStore';
+import { MAX_ZOOM, MIN_ZOOM, useZoomStore } from '@app/store/useZoomStore';
 
 // SIZE: 24px tall (h-6). Reserved for progress bars, zoom controls, status text.
 export function Footer() {
@@ -12,7 +13,7 @@ export function Footer() {
 
   return (
     <footer className="flex h-6 w-full shrink-0 items-center justify-between border-t border-border bg-bg px-3 text-xs text-text-muted">
-      <div />
+      <ZoomControl />
       <button
         type="button"
         onClick={toggle}
@@ -39,6 +40,50 @@ export function Footer() {
         />
       )}
     </footer>
+  );
+}
+
+function ZoomControl() {
+  const factor = useZoomStore((s) => s.factor);
+  const zoomIn = useZoomStore((s) => s.zoomIn);
+  const zoomOut = useZoomStore((s) => s.zoomOut);
+  const reset = useZoomStore((s) => s.reset);
+
+  const buttonClass =
+    'flex items-center rounded-sm p-1 text-text-muted transition-colors hover:bg-surface-raised hover:text-text disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-text-muted';
+
+  return (
+    <div className="flex items-center gap-0.5">
+      <button
+        type="button"
+        onClick={zoomOut}
+        disabled={factor <= MIN_ZOOM}
+        aria-label="Zoom out"
+        title="Zoom out"
+        className={buttonClass}
+      >
+        <ZoomOut size={14} />
+      </button>
+      <button
+        type="button"
+        onClick={reset}
+        aria-label="Reset zoom to 100%"
+        title="Reset zoom to 100%"
+        className="min-w-10 rounded-sm px-1 py-0.5 text-center tabular-nums text-text-muted transition-colors hover:bg-surface-raised hover:text-text"
+      >
+        {Math.round(factor * 100)}%
+      </button>
+      <button
+        type="button"
+        onClick={zoomIn}
+        disabled={factor >= MAX_ZOOM}
+        aria-label="Zoom in"
+        title="Zoom in"
+        className={buttonClass}
+      >
+        <ZoomIn size={14} />
+      </button>
+    </div>
   );
 }
 
