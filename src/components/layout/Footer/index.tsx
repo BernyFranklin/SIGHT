@@ -12,8 +12,9 @@ export function Footer() {
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
 
   return (
-    <footer className="flex h-6 w-full shrink-0 items-center justify-between border-t border-border bg-bg px-3 text-xs text-text-muted">
+    <footer className="flex h-6 w-full shrink-0 items-center justify-end gap-2 border-t border-border bg-bg px-3 text-xs text-text-muted">
       <ZoomControl />
+      <div className="h-3.5 w-px bg-border" />
       <button
         type="button"
         onClick={toggle}
@@ -50,7 +51,7 @@ function ZoomControl() {
   const reset = useZoomStore((s) => s.reset);
 
   const buttonClass =
-    'flex items-center rounded-sm p-1 text-text-muted transition-colors hover:bg-surface-raised hover:text-text disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-text-muted';
+    'flex items-center rounded-sm p-1 text-accent transition-colors hover:bg-accent/15 hover:text-accent disabled:cursor-default disabled:text-text-muted disabled:opacity-40 disabled:hover:bg-transparent';
 
   return (
     <div className="flex items-center gap-0.5">
@@ -69,7 +70,7 @@ function ZoomControl() {
         onClick={reset}
         aria-label="Reset zoom to 100%"
         title="Reset zoom to 100%"
-        className="min-w-10 rounded-sm px-1 py-0.5 text-center tabular-nums text-text-muted transition-colors hover:bg-surface-raised hover:text-text"
+        className="min-w-10 rounded-sm px-1 py-0.5 text-center font-medium tabular-nums text-text transition-colors hover:bg-surface-raised hover:text-accent"
       >
         {Math.round(factor * 100)}%
       </button>

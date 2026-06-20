@@ -85,6 +85,11 @@ export function MenuDropdown({ items, onSelect, side = 'bottom' }: Props) {
               />
             )}
             <span>{item.label}</span>
+            {item.shortcut && (
+              <span className="ml-auto pl-4 text-xs tabular-nums text-text-muted">
+                {item.shortcut}
+              </span>
+            )}
           </button>
         );
       })}

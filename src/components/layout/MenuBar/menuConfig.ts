@@ -13,6 +13,7 @@ export type MenuItem =
       onSelect?: () => void;
       disabled?: boolean;
       checked?: boolean;
+      shortcut?: string;
     }
   | { kind: 'submenu'; label: string; items: MenuItem[]; disabled?: boolean }
   | { kind: 'separator' };
@@ -166,18 +167,21 @@ export function useMenuSections(): MenuSection[] {
         label: 'Zoom In',
         onSelect: zoomIn,
         disabled: zoomFactor >= MAX_ZOOM,
+        shortcut: 'Ctrl +',
       },
       {
         kind: 'item',
         label: 'Zoom Out',
         onSelect: zoomOut,
         disabled: zoomFactor <= MIN_ZOOM,
+        shortcut: 'Ctrl -',
       },
       {
         kind: 'item',
         label: 'Reset Zoom',
         onSelect: resetZoom,
         disabled: zoomFactor === 1,
+        shortcut: 'Ctrl 0',
       },
       { kind: 'separator' },
       {
