@@ -1,5 +1,10 @@
 import { useProjectStore } from '@app/store/useProjectStore';
 import { useThemeStore } from '@app/store/useThemeStore';
+import {
+  MAX_ZOOM,
+  MIN_ZOOM,
+  useZoomStore,
+} from '@app/store/useZoomStore';
 
 export type MenuItem =
   | {
@@ -112,6 +117,10 @@ export function useMenuSections(): MenuSection[] {
   const hasOpenProjects = useProjectStore((s) => s.open.length > 0);
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
+  const zoomFactor = useZoomStore((s) => s.factor);
+  const zoomIn = useZoomStore((s) => s.zoomIn);
+  const zoomOut = useZoomStore((s) => s.zoomOut);
+  const resetZoom = useZoomStore((s) => s.reset);
 
   const viewSection: MenuSection = {
     id: 'view',
@@ -152,9 +161,24 @@ export function useMenuSections(): MenuSection[] {
         ],
       },
       { kind: 'separator' },
-      { kind: 'item', label: 'Zoom In', onSelect: log('View > Zoom In') },
-      { kind: 'item', label: 'Zoom Out', onSelect: log('View > Zoom Out') },
-      { kind: 'item', label: 'Reset Zoom', onSelect: log('View > Reset Zoom') },
+      {
+        kind: 'item',
+        label: 'Zoom In',
+        onSelect: zoomIn,
+        disabled: zoomFactor >= MAX_ZOOM,
+      },
+      {
+        kind: 'item',
+        label: 'Zoom Out',
+        onSelect: zoomOut,
+        disabled: zoomFactor <= MIN_ZOOM,
+      },
+      {
+        kind: 'item',
+        label: 'Reset Zoom',
+        onSelect: resetZoom,
+        disabled: zoomFactor === 1,
+      },
       { kind: 'separator' },
       {
         kind: 'item',
